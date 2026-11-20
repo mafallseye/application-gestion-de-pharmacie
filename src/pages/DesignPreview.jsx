@@ -269,7 +269,7 @@ export function DesignPreview() {
       </Alert>
 
       <Section title="Indicateurs">
-        <Grid min="15rem">
+        <Grid min="19rem">
           <StatCard label="Ventes du jour" value={fcfa(184500)} hint="23 ventes depuis l’ouverture" icon={Banknote} tone="success" />
           <StatCard label="Ventes du mois" value={fcfa(3915000)} hint="Novembre, 20 jours écoulés" icon={TrendingUp} />
           <StatCard label="Valeur du stock" value={fcfa(4862500)} hint="412 références" icon={PackageSearch} />

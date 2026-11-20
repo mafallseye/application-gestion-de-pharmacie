@@ -90,10 +90,6 @@
   max-width: 25rem;
 }
 
-.mobileBrand {
-  display: none;
-}
-
 .title {
   font-size: var(--text-3xl);
   letter-spacing: -0.022em;
@@ -126,17 +122,20 @@
     padding: var(--space-5) var(--space-5) var(--space-6);
   }
 
-  .aside .brand {
-    display: none;
+  .brandName {
+    font-size: var(--text-xl);
   }
 
   .statement {
-    max-width: 20em;
-    margin-top: 0;
+    max-width: 22em;
+    margin-top: var(--space-4);
     padding-top: 0;
-    font-size: var(--text-xl);
-    line-height: 1.2;
-    letter-spacing: -0.015em;
+    color: #c7d6d0;
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-snug);
+    letter-spacing: 0;
   }
 
   .blister {
@@ -155,14 +154,6 @@
   .main {
     place-items: start center;
     padding: var(--space-8) var(--space-5) var(--space-10);
-  }
-
-  .mobileBrand {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    margin-bottom: var(--space-8);
-    color: var(--color-text);
   }
 
   .title {

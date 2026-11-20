@@ -7,6 +7,7 @@
 }
 
 .scroll {
+  position: relative; /* contient les éléments .sr-only des cellules */
   overflow-x: auto;
   overscroll-behavior-x: contain;
 }

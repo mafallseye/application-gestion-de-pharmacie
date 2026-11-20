@@ -27,10 +27,6 @@ export function AuthLayout({ title, subtitle, children, footer, brand = 'Pharmac
 
       <main className={styles.main}>
         <div className={styles.panel}>
-          <div className={styles.mobileBrand}>
-            <Logo size={36} />
-            <span className={styles.brandName}>{brand}</span>
-          </div>
           <h1 className={styles.title}>{title}</h1>
           {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
           <div className={styles.body}>{children}</div>
