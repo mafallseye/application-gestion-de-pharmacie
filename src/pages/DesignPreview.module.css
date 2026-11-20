@@ -1,0 +1,249 @@
+.section {
+  margin-top: var(--space-10);
+}
+
+.sectionHead {
+  margin-bottom: var(--space-4);
+}
+
+.sectionHead p {
+  margin-top: var(--space-1);
+  max-width: 72ch;
+  color: var(--color-text-muted);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.note {
+  margin: var(--space-6) 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.filter {
+  width: auto;
+  min-width: 13rem;
+}
+
+.toolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.medicine {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.medicineName {
+  font-weight: var(--weight-semibold);
+}
+
+.medicineGeneric {
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+}
+
+.rowActions {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+/* Dernières ventes */
+.saleList {
+  padding: 0 var(--space-5) var(--space-2);
+}
+
+.saleItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.saleMain {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.saleCustomer {
+  font-weight: var(--weight-medium);
+}
+
+.saleMeta {
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+}
+
+.saleAmount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+/* Caisse */
+.pos {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(20rem, 2fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.catalogue {
+  margin-top: var(--space-3);
+}
+
+.catalogueItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 3.75rem;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.catalogueItem:last-child {
+  border-bottom: 0;
+}
+
+.cataloguePrice {
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.cart {
+  margin-bottom: var(--space-2);
+}
+
+.cartLine {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  grid-row: span 2;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.qty {
+  min-width: 2rem;
+  font-weight: var(--weight-semibold);
+  text-align: center;
+}
+
+.lineTotal {
+  font-weight: var(--weight-semibold);
+}
+
+.totalRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  color: var(--color-text-muted);
+}
+
+.totalRow strong {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.015em;
+}
+
+.posSubmit {
+  margin-top: var(--space-4);
+}
+
+/* Démonstrations */
+.demoRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.demoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.messages {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.messages + .split {
+  margin-bottom: var(--space-4);
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.authForm > button {
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 1100px) {
+  .split,
+  .pos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .messages {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .filter {
+    width: 100%;
+  }
+
+  .toolbarActions {
+    width: 100%;
+  }
+
+  .toolbarActions > * {
+    flex: 1 1 auto;
+  }
+
+  .catalogueItem {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .cataloguePrice {
+    display: none;
+  }
+}
