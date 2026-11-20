@@ -1,0 +1,43 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  line-height: var(--leading-snug);
+  padding-bottom: 2px;
+}
+
+.required {
+  margin-left: 0.2em;
+  color: var(--color-danger);
+}
+
+.hint,
+.error {
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  padding-top: 2px;
+}
+
+.hint {
+  color: var(--color-text-subtle);
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  color: var(--color-danger);
+  font-weight: var(--weight-medium);
+}
+
+.error svg {
+  flex: none;
+  margin-top: 0.18em;
+}

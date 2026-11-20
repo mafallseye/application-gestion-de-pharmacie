@@ -1,0 +1,88 @@
+.card {
+  --tone-fg: var(--tone-neutral-fg);
+  --tone-bg: var(--tone-neutral-bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.success {
+  --tone-fg: var(--tone-success-fg);
+  --tone-bg: var(--tone-success-bg);
+}
+.info {
+  --tone-fg: var(--tone-info-fg);
+  --tone-bg: var(--tone-info-bg);
+}
+.warning {
+  --tone-fg: var(--tone-warning-fg);
+  --tone-bg: var(--tone-warning-bg);
+}
+.danger {
+  --tone-fg: var(--tone-danger-fg);
+  --tone-bg: var(--tone-danger-bg);
+}
+
+/* Filet latéral : signale ce qui demande une action */
+.warning::before,
+.danger::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--tone-fg);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 2.25rem;
+}
+
+.label {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-sm);
+  background: var(--tone-bg);
+  color: var(--tone-fg);
+}
+
+.value {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.warning .hint,
+.danger .hint {
+  color: var(--tone-fg);
+}

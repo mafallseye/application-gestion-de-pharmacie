@@ -1,0 +1,169 @@
+.wrap {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.scroll:focus-visible {
+  outline-offset: -2px;
+}
+
+.table {
+  width: 100%;
+}
+
+.th {
+  height: 2.75rem;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.td {
+  height: 3.5rem;
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.th:first-child,
+.td:first-child {
+  padding-left: var(--space-5);
+}
+
+.th:last-child,
+.td:last-child {
+  padding-right: var(--space-5);
+}
+
+.row:last-child .td {
+  border-bottom: 0;
+}
+
+.left {
+  text-align: left;
+}
+.right {
+  text-align: right;
+}
+.center {
+  text-align: center;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover .td {
+  background: var(--color-surface-muted);
+}
+
+.clickable:focus-visible {
+  outline-offset: -2px;
+}
+
+.emptyCell {
+  padding: 0;
+}
+
+.skeleton {
+  display: inline-block;
+  height: 0.75rem;
+  max-width: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-skeleton) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  vertical-align: middle;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* Variante « cartes » sur téléphone */
+@media (max-width: 640px) {
+  .cards .table {
+    min-width: 0 !important;
+  }
+
+  .cards thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .cards .table,
+  .cards tbody,
+  .cards .row,
+  .cards .td {
+    display: block;
+  }
+
+  .cards .row {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .cards .row:last-child {
+    border-bottom: 0;
+  }
+
+  .cards .td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    height: auto;
+    min-height: 2rem;
+    padding: var(--space-1) 0;
+    border: 0;
+    text-align: right;
+  }
+
+  .cards .td::before {
+    content: attr(data-label);
+    flex: none;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-align: left;
+  }
+
+  .cards .td:first-child {
+    font-weight: var(--weight-semibold);
+    text-align: left;
+  }
+
+  .cards .td:first-child::before,
+  .cards .td:not([data-label])::before,
+  .cards .td[data-label='']::before {
+    content: none;
+  }
+
+  .cards .td:not([data-label]),
+  .cards .td[data-label=''] {
+    justify-content: flex-end;
+  }
+
+  .cards .clickable:hover .td {
+    background: transparent;
+  }
+}

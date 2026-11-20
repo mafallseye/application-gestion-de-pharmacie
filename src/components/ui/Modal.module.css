@@ -1,0 +1,130 @@
+.dialog {
+  width: min(100vw - 2 * var(--space-4), 34rem);
+  max-width: none;
+  max-height: min(100dvh - 2 * var(--space-4), 46rem);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.dialog[open] {
+  display: flex;
+  animation: rise var(--duration) var(--ease-out);
+}
+
+.dialog::backdrop {
+  background: var(--color-overlay);
+  animation: fade var(--duration) ease;
+}
+
+.sm {
+  width: min(100vw - 2 * var(--space-4), 26rem);
+}
+
+.lg {
+  width: min(100vw - 2 * var(--space-4), 50rem);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4) var(--space-3) var(--space-6);
+}
+
+.heading {
+  flex: 1;
+  min-width: 0;
+  padding-top: var(--space-1);
+}
+
+.title {
+  font-size: var(--text-xl);
+}
+
+.description {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.close {
+  margin-top: -2px;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-2) var(--space-6) var(--space-6);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+}
+
+/* Sur téléphone : feuille ancrée en bas, boutons pleine largeur */
+@media (max-width: 560px) {
+  .dialog,
+  .sm,
+  .lg {
+    width: 100vw;
+    max-height: calc(100dvh - var(--space-8));
+    margin: auto 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-width: 1px 0 0;
+  }
+
+  .header {
+    padding-left: var(--space-4);
+    padding-right: var(--space-2);
+  }
+
+  .body {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .footer {
+    flex-direction: column-reverse;
+    padding: var(--space-4);
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  }
+
+  .footer > * {
+    width: 100%;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}

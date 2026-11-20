@@ -1,0 +1,9 @@
+.message {
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+}
+
+.message strong {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+}

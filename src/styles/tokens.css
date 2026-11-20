@@ -1,0 +1,259 @@
+/*
+ * Tokens du design system « Pharmacie ».
+ * Palette « flacon ambré » : vert sapin d'officine, papier minéral, ambre
+ * (le verre des flacons) en accent rare. Clair par défaut ; sombre via
+ * prefers-color-scheme ou l'attribut data-theme="dark" sur <html>.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Typographie */
+  --font-display: 'Bricolage Grotesque', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --text-xs: 0.75rem; /* 12 */
+  --text-sm: 0.8125rem; /* 13 */
+  --text-md: 0.9375rem; /* 15 — corps */
+  --text-lg: 1.0625rem; /* 17 */
+  --text-xl: 1.25rem; /* 20 */
+  --text-2xl: 1.625rem; /* 26 */
+  --text-3xl: 2.125rem; /* 34 */
+  --text-4xl: 2.875rem; /* 46 */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Espacements (base 4px) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Rayons : petits sur les contrôles, plus amples sur les surfaces */
+  --radius-xs: 4px;
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* Dimensions */
+  --control-height: 2.75rem; /* 44px — cible tactile */
+  --control-height-sm: 2.5rem; /* 40px */
+  --sidebar-width: 17rem;
+  --content-max: 82rem;
+
+  /* Mouvement */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration: 200ms;
+
+  /* Couches */
+  --z-header: 20;
+  --z-drawer: 40;
+  --z-toast: 80;
+
+  /* Couleurs — thème clair */
+  --color-bg: #f2f5f3;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-muted: #f6f8f7;
+  --color-surface-sunken: #e8edea;
+  --color-border: #d8e0dc;
+  --color-border-strong: #84938c;
+  --color-text: #14211d;
+  --color-text-muted: #4c5c55;
+  --color-text-subtle: #5f6e67;
+  --color-placeholder: #6b7a73;
+
+  --color-primary: #0e6b58;
+  --color-primary-hover: #0a5747;
+  --color-primary-active: #084638;
+  --color-primary-soft: #dcefe8;
+  --color-primary-soft-hover: #cbe6dc;
+  --color-on-primary: #ffffff;
+  --color-link: #0c6150;
+
+  --color-accent: #b46a00;
+  --color-accent-bright: #f0b14a;
+
+  --color-danger: #b3261e;
+  --color-danger-solid: #bf2f26;
+  --color-danger-solid-hover: #a3241c;
+  --color-on-danger: #ffffff;
+
+  --tone-neutral-fg: #43524c;
+  --tone-neutral-bg: #e6ebe8;
+  --tone-neutral-border: #cdd6d1;
+  --tone-success-fg: #0a6144;
+  --tone-success-bg: #dcf1e6;
+  --tone-success-border: #a9d9c0;
+  --tone-warning-fg: #804c00;
+  --tone-warning-bg: #fbeccd;
+  --tone-warning-border: #ecca86;
+  --tone-danger-fg: #a8231b;
+  --tone-danger-bg: #fbe4e1;
+  --tone-danger-border: #efb3ad;
+  --tone-info-fg: #1c5a92;
+  --tone-info-bg: #dfecf8;
+  --tone-info-border: #aecbe8;
+
+  --color-focus: #0e6b58;
+  --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-focus);
+
+  --color-overlay: rgb(9 25 21 / 0.55);
+  --color-skeleton: #e3e9e6;
+  --color-skeleton-shine: #f1f4f2;
+
+  /* Barre latérale : toujours sombre, c'est la signature de l'appli */
+  --sidebar-bg: #0b2a24;
+  --sidebar-border: #0b2a24;
+  --sidebar-text: #c7d6d0;
+  --sidebar-text-muted: #94aaa2;
+  --sidebar-text-strong: #ffffff;
+  --sidebar-hover: rgb(255 255 255 / 0.06);
+  --sidebar-active: rgb(255 255 255 / 0.1);
+  --sidebar-marker: #f0b14a;
+  --sidebar-focus: #f0b14a;
+
+  /* Ombres teintées de vert plutôt que gris neutre */
+  --shadow-sm: 0 1px 2px rgb(11 42 36 / 0.06);
+  --shadow-md: 0 4px 14px rgb(11 42 36 / 0.09), 0 1px 2px rgb(11 42 36 / 0.05);
+  --shadow-lg: 0 24px 60px rgb(11 42 36 / 0.22), 0 4px 12px rgb(11 42 36 / 0.08);
+}
+
+/* Thème sombre — préférence système, sauf si le clair est forcé */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --color-bg: #0c1412;
+    --color-surface: #131d1a;
+    --color-surface-raised: #18241f;
+    --color-surface-muted: #17221e;
+    --color-surface-sunken: #0f1816;
+    --color-border: #26352f;
+    --color-border-strong: #62766d;
+    --color-text: #e6eeea;
+    --color-text-muted: #a9b9b2;
+    --color-text-subtle: #8fa098;
+    --color-placeholder: #84958e;
+
+    --color-primary: #4fc3a1;
+    --color-primary-hover: #6ad2b3;
+    --color-primary-active: #85dcc2;
+    --color-primary-soft: #143a31;
+    --color-primary-soft-hover: #1a483d;
+    --color-on-primary: #05231b;
+    --color-link: #6ad2b3;
+
+    --color-accent: #f0b14a;
+    --color-accent-bright: #f0b14a;
+
+    --color-danger: #ff9c92;
+    --color-danger-solid: #ef7166;
+    --color-danger-solid-hover: #f58b81;
+    --color-on-danger: #2b0906;
+
+    --tone-neutral-fg: #b7c5bf;
+    --tone-neutral-bg: #1f2b27;
+    --tone-neutral-border: #33443d;
+    --tone-success-fg: #74d9aa;
+    --tone-success-bg: #11342a;
+    --tone-success-border: #1f5a47;
+    --tone-warning-fg: #f3c066;
+    --tone-warning-bg: #382b0d;
+    --tone-warning-border: #6a511a;
+    --tone-danger-fg: #ffa298;
+    --tone-danger-bg: #3d1918;
+    --tone-danger-border: #74302c;
+    --tone-info-fg: #92c6f6;
+    --tone-info-bg: #132e47;
+    --tone-info-border: #26527c;
+
+    --color-focus: #6ad2b3;
+    --color-overlay: rgb(2 8 6 / 0.7);
+    --color-skeleton: #1c2925;
+    --color-skeleton-shine: #26352f;
+
+    --sidebar-bg: #091210;
+    --sidebar-border: #1d2a26;
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 14px rgb(0 0 0 / 0.35);
+    --shadow-lg: 0 24px 60px rgb(0 0 0 / 0.55);
+  }
+}
+
+/* Thème sombre — forcé par la bascule (mêmes valeurs que ci-dessus) */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #0c1412;
+  --color-surface: #131d1a;
+  --color-surface-raised: #18241f;
+  --color-surface-muted: #17221e;
+  --color-surface-sunken: #0f1816;
+  --color-border: #26352f;
+  --color-border-strong: #62766d;
+  --color-text: #e6eeea;
+  --color-text-muted: #a9b9b2;
+  --color-text-subtle: #8fa098;
+  --color-placeholder: #84958e;
+
+  --color-primary: #4fc3a1;
+  --color-primary-hover: #6ad2b3;
+  --color-primary-active: #85dcc2;
+  --color-primary-soft: #143a31;
+  --color-primary-soft-hover: #1a483d;
+  --color-on-primary: #05231b;
+  --color-link: #6ad2b3;
+
+  --color-accent: #f0b14a;
+  --color-accent-bright: #f0b14a;
+
+  --color-danger: #ff9c92;
+  --color-danger-solid: #ef7166;
+  --color-danger-solid-hover: #f58b81;
+  --color-on-danger: #2b0906;
+
+  --tone-neutral-fg: #b7c5bf;
+  --tone-neutral-bg: #1f2b27;
+  --tone-neutral-border: #33443d;
+  --tone-success-fg: #74d9aa;
+  --tone-success-bg: #11342a;
+  --tone-success-border: #1f5a47;
+  --tone-warning-fg: #f3c066;
+  --tone-warning-bg: #382b0d;
+  --tone-warning-border: #6a511a;
+  --tone-danger-fg: #ffa298;
+  --tone-danger-bg: #3d1918;
+  --tone-danger-border: #74302c;
+  --tone-info-fg: #92c6f6;
+  --tone-info-bg: #132e47;
+  --tone-info-border: #26527c;
+
+  --color-focus: #6ad2b3;
+  --color-overlay: rgb(2 8 6 / 0.7);
+  --color-skeleton: #1c2925;
+  --color-skeleton-shine: #26352f;
+
+  --sidebar-bg: #091210;
+  --sidebar-border: #1d2a26;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 14px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 24px 60px rgb(0 0 0 / 0.55);
+}
