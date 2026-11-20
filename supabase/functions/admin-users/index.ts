@@ -43,14 +43,26 @@ Deno.serve(async (req) => {
   if (userError || !userData?.user) return json(401, { error: 'Session invalide.' })
   const callerId = userData.user.id
 
-  // 2. Est-ce un administrateur actif ?
+  // 2. Est-ce un administrateur actif, rattaché à une pharmacie ?
   const { data: caller } = await admin
     .from('profiles')
-    .select('role, active')
+    .select('role, active, pharmacy_id')
     .eq('id', callerId)
     .maybeSingle()
-  if (!caller || !caller.active || caller.role !== 'admin') {
+  if (!caller || !caller.active || caller.role !== 'admin' || !caller.pharmacy_id) {
     return json(403, { error: 'Réservé aux administrateurs.' })
+  }
+  const pharmacyId: string = caller.pharmacy_id
+
+  // Un administrateur n'agit que sur les comptes de sa propre pharmacie.
+  const inMyPharmacy = async (userId: string) => {
+    const { data } = await admin
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .eq('pharmacy_id', pharmacyId)
+      .maybeSingle()
+    return Boolean(data)
   }
 
   let body: Record<string, unknown>
@@ -90,7 +102,7 @@ Deno.serve(async (req) => {
     // Le profil est créé (inactif) par un déclencheur ; on l'active avec son rôle.
     const { error: profileError } = await admin
       .from('profiles')
-      .update({ role, active: true, full_name: fullName })
+      .update({ role, active: true, full_name: fullName, pharmacy_id: pharmacyId })
       .eq('id', created.user.id)
     if (profileError) {
       await admin.auth.admin.deleteUser(created.user.id)
@@ -104,6 +116,7 @@ Deno.serve(async (req) => {
     if (!validPassword(body.password)) {
       return json(400, { error: 'Le mot de passe doit contenir entre 8 et 72 caractères.' })
     }
+    if (!(await inMyPharmacy(body.user_id))) return json(404, { error: 'Utilisateur introuvable.' })
     const { error } = await admin.auth.admin.updateUserById(body.user_id, { password: body.password })
     if (error) return json(400, { error: 'Changement de mot de passe impossible.' })
     return json(200, { ok: true })
@@ -114,6 +127,7 @@ Deno.serve(async (req) => {
     if (body.user_id === callerId) {
       return json(400, { error: 'Vous ne pouvez pas supprimer votre propre compte.' })
     }
+    if (!(await inMyPharmacy(body.user_id))) return json(404, { error: 'Utilisateur introuvable.' })
     const { error } = await admin.auth.admin.deleteUser(body.user_id)
     if (error) return json(400, { error: 'Suppression impossible.' })
     return json(200, { ok: true })
