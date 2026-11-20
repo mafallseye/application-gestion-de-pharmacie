@@ -26,7 +26,10 @@ export function startCheckout(plan) {
   return billing({ action: 'checkout', plan })
 }
 
-/** État d'un paiement au retour de PayDunya : 'completed' | 'pending' | 'cancelled' | 'failed' | 'unknown'. */
+/**
+ * État d'un paiement auprès de PayDunya : 'completed' | 'pending' | 'cancelled' |
+ * 'failed' | 'review' | 'error' | 'unknown' (voir paymentOutcome).
+ */
 export async function verifyPayment(token) {
   const { status } = await billing({ action: 'verify', token })
   return status
@@ -77,6 +80,15 @@ export function usePaymentCheck(token) {
     enabled: Boolean(token),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
+  })
+}
+
+/** Vérification manuelle d'un paiement de l'historique (bouton « Vérifier »). */
+export function useVerifyPayment() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: verifyPayment,
+    onSettled: () => invalidate(queryClient, ['profile'], queryKeys.subscriptionPayments),
   })
 }
 

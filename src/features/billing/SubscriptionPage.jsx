@@ -24,20 +24,14 @@ import { hasErrors, validatePharmacy } from '../../lib/validation.js'
 import { LoadError } from '../shared/LoadError.jsx'
 import { usePageTitle } from '../shared/usePageTitle.js'
 import shared from '../shared/shared.module.css'
-import { usePaymentCheck, usePlans, useSavePharmacy, useStartCheckout, useSubscriptionPayments } from './api.js'
+import { usePaymentCheck, usePlans, useSavePharmacy, useStartCheckout, useSubscriptionPayments, useVerifyPayment } from './api.js'
+import { canVerify, paymentBadge, paymentOutcome, paymentsToRecheck } from './payments.js'
 import styles from './SubscriptionPage.module.css'
 
 const STATUS = {
   trial: { tone: 'info', label: 'Période d’essai' },
   active: { tone: 'success', label: 'Abonnement en cours' },
   expired: { tone: 'danger', label: 'Expiré' },
-}
-
-const PAYMENT_STATUS = {
-  completed: { tone: 'success', label: 'Payé' },
-  pending: { tone: 'warning', label: 'En attente' },
-  cancelled: { tone: 'neutral', label: 'Annulé' },
-  failed: { tone: 'danger', label: 'Échoué' },
 }
 
 const duration = (months) => (months === 1 ? '1 mois' : months === 12 ? '1 an' : `${months} mois`)
@@ -61,67 +55,53 @@ export default function SubscriptionPage() {
         ) : null}
         <StatusCard subscription={subscription} />
         <Plans subscription={subscription} />
-        <PaymentHistory />
+        <PaymentHistory skipToken={token} />
         <PharmacyForm pharmacy={pharmacy} />
       </Stack>
     </>
   )
 }
 
+/** Résultat d'une vérification : `status` de la fonction billing, ou `error` (appel refusé). */
+function Outcome({ status, error, checking, onRetry, onClose }) {
+  // Appel refusé (429, 502, 503…) : le message du serveur est affiché tel quel.
+  const outcome = error
+    ? { tone: 'danger', title: 'Le paiement n’a pas pu être vérifié', message: errorMessage(error), retry: true }
+    : paymentOutcome(status)
+  return (
+    <Alert
+      tone={outcome.tone}
+      title={outcome.title}
+      action={
+        outcome.retry ? (
+          <Button size="sm" variant="secondary" loading={checking} onClick={onRetry}>
+            {error || status === 'error' ? 'Réessayer' : 'Vérifier à nouveau'}
+          </Button>
+        ) : (
+          <Button size="sm" variant="secondary" onClick={onClose}>
+            Fermer
+          </Button>
+        )
+      }
+    >
+      {outcome.message}
+    </Alert>
+  )
+}
+
 /** Résultat du paiement au retour de PayDunya (?token=…). */
 function PaymentResult({ token, onDismiss }) {
   const check = usePaymentCheck(token)
-  const again = (
-    <Button size="sm" variant="secondary" loading={check.isFetching} onClick={() => check.refetch()}>
-      Vérifier à nouveau
-    </Button>
-  )
-  const close = (
-    <Button size="sm" variant="secondary" onClick={onDismiss}>
-      Fermer
-    </Button>
-  )
-
   if (check.isPending) return <Alert tone="info">Vérification du paiement en cours…</Alert>
-  if (check.isError) {
-    return (
-      <Alert tone="danger" title="Le paiement n’a pas pu être vérifié" action={again}>
-        {errorMessage(check.error)}
-      </Alert>
-    )
-  }
-  switch (check.data) {
-    case 'completed':
-      return (
-        <Alert tone="success" title="Paiement reçu, merci !" action={close}>
-          Votre abonnement a été prolongé.
-        </Alert>
-      )
-    case 'pending':
-      return (
-        <Alert tone="warning" title="Paiement en attente de confirmation" action={again}>
-          La confirmation peut prendre quelques minutes. Votre abonnement sera prolongé dès qu’elle arrivera.
-        </Alert>
-      )
-    case 'cancelled':
-      return (
-        <Alert tone="info" title="Paiement annulé" action={close}>
-          Aucun montant n’a été débité.
-        </Alert>
-      )
-    case 'failed':
-      return (
-        <Alert tone="danger" title="Le paiement a échoué" action={close}>
-          Aucun abonnement n’a été enregistré. Vous pouvez réessayer ci-dessous.
-        </Alert>
-      )
-    default:
-      return (
-        <Alert tone="danger" title="Paiement introuvable" action={close}>
-          Cette référence de paiement ne correspond à aucun paiement de votre pharmacie.
-        </Alert>
-      )
-  }
+  return (
+    <Outcome
+      status={check.data}
+      error={check.isError ? check.error : null}
+      checking={check.isFetching}
+      onRetry={() => check.refetch()}
+      onClose={onDismiss}
+    />
+  )
 }
 
 function StatusCard({ subscription }) {
@@ -209,29 +189,99 @@ const PAYMENT_COLUMNS = [
     key: 'status',
     header: 'Statut',
     render: (payment) => {
-      const status = PAYMENT_STATUS[payment.status] ?? { tone: 'neutral', label: payment.status }
-      return <Badge tone={status.tone}>{status.label}</Badge>
+      const badge = paymentBadge(payment.status)
+      return <Badge tone={badge.tone}>{badge.label}</Badge>
     },
   },
 ]
 
-function PaymentHistory() {
+/**
+ * Historique des paiements. Un paiement resté « en attente » (onglet fermé
+ * avant le retour de PayDunya) peut être revérifié : d'office à l'ouverture de
+ * la page pour les paiements récents, puis à la demande (bouton « Vérifier »).
+ * `skipToken` : paiement déjà vérifié par le retour ?token=….
+ */
+function PaymentHistory({ skipToken }) {
+  const toast = useToast()
   const payments = useSubscriptionPayments()
+  const verify = useVerifyPayment()
+  // Dernière vérification demandée : { id, status } ou { id, error }.
+  const [checked, setChecked] = useState(null)
+  const autoChecked = useRef(false)
+
+  // Vérification d'office, une seule fois par ouverture de la page (pas de boucle).
+  const verifyAsync = verify.mutateAsync
+  useEffect(() => {
+    if (autoChecked.current || !payments.data) return
+    autoChecked.current = true
+    const pending = paymentsToRecheck(payments.data).filter((payment) => payment.provider_token !== skipToken)
+    const run = async () => {
+      for (const payment of pending) {
+        // Silencieux en cas d'échec : le bouton « Vérifier » reste disponible sur la ligne.
+        const status = await verifyAsync(payment.provider_token).catch(() => null)
+        if (status === 'completed') toast.success('Un paiement en attente a été validé : votre abonnement est prolongé.')
+      }
+    }
+    run()
+  }, [payments.data, skipToken, verifyAsync, toast])
+
+  const check = async (payment) => {
+    setChecked(null)
+    try {
+      setChecked({ id: payment.id, token: payment.provider_token, status: await verify.mutateAsync(payment.provider_token) })
+    } catch (error) {
+      setChecked({ id: payment.id, token: payment.provider_token, error })
+    }
+  }
+
+  const columns = [
+    ...PAYMENT_COLUMNS,
+    {
+      key: 'actions',
+      header: <span className="sr-only">Actions</span>,
+      align: 'right',
+      width: '7rem',
+      render: (payment) =>
+        canVerify(payment) ? (
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={verify.isPending && verify.variables === payment.provider_token}
+            disabled={verify.isPending}
+            onClick={() => check(payment)}
+          >
+            Vérifier
+          </Button>
+        ) : null,
+    },
+  ]
+
   return (
     <section>
       <h2 className={styles.sectionTitle}>Historique des paiements</h2>
+      {checked ? (
+        <div className={shared.pageAlert}>
+          <Outcome
+            status={checked.status}
+            error={checked.error ?? null}
+            checking={verify.isPending}
+            onRetry={() => check({ id: checked.id, provider_token: checked.token })}
+            onClose={() => setChecked(null)}
+          />
+        </div>
+      ) : null}
       {payments.isError ? (
         <LoadError query={payments} />
       ) : (
         <DataTable
           caption="Historique des paiements d’abonnement"
-          columns={PAYMENT_COLUMNS}
+          columns={columns}
           rows={payments.data}
           rowKey={(payment) => payment.id}
           loading={payments.isPending}
           skeletonRows={2}
           mobileCards
-          minWidth="30rem"
+          minWidth="36rem"
           empty={<EmptyState compact icon={CreditCard} title="Aucun paiement" message="Vos paiements d’abonnement apparaîtront ici." />}
         />
       )}
