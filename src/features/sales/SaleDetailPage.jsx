@@ -7,6 +7,7 @@ import {
   Card,
   ConfirmDialog,
   DataTable,
+  EmptyState,
   Field,
   Input,
   PageHeader,
@@ -33,6 +34,12 @@ const ITEM_COLUMNS = [
   { key: 'unit_price', header: 'Prix unitaire', align: 'right', render: (item) => money(item.unit_price) },
   { key: 'quantity', header: 'Quantité', align: 'right', render: (item) => formatNumber(item.quantity) },
   { key: 'line_total', header: 'Total', align: 'right', render: (item) => money(item.line_total) },
+]
+
+const PAYMENT_COLUMNS = [
+  { key: 'created_at', header: 'Date', render: (payment) => <span className={shared.nowrap}>{formatDateTime(payment.created_at)}</span> },
+  { key: 'author', header: 'Encaissé par', render: (payment) => payment.author?.full_name || payment.author?.email || '—' },
+  { key: 'amount', header: 'Montant', align: 'right', render: (payment) => money(payment.amount) },
 ]
 
 const backButton = (
@@ -159,6 +166,19 @@ export default function SaleDetailPage() {
         <section>
           <h2 className={styles.sectionTitle}>Articles</h2>
           <DataTable caption="Articles de la vente" columns={ITEM_COLUMNS} rows={data.items} rowKey={(item) => item.id} mobileCards minWidth="32rem" />
+        </section>
+
+        <section>
+          <h2 className={styles.sectionTitle}>Paiements</h2>
+          <DataTable
+            caption="Historique des paiements"
+            columns={PAYMENT_COLUMNS}
+            rows={data.payments}
+            rowKey={(payment) => payment.id}
+            mobileCards
+            minWidth="28rem"
+            empty={<EmptyState compact title="Aucun paiement" message="Rien n’a encore été encaissé pour cette vente." />}
+          />
         </section>
       </Stack>
 

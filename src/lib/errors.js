@@ -35,6 +35,9 @@ const BY_AUTH_CODE = {
   refresh_token_not_found: SESSION,
   refresh_token_already_used: SESSION,
   bad_jwt: SESSION,
+  same_password: "Le nouveau mot de passe doit être différent de l'ancien.",
+  weak_password: 'Ce mot de passe est trop faible. Choisissez-en un plus long ou moins courant.',
+  reauthentication_needed: 'Pour changer de mot de passe, déconnectez-vous puis reconnectez-vous, et réessayez.',
 }
 
 // Codes utilisés par les `raise exception` du schéma : leur message est déjà

@@ -168,6 +168,16 @@ export function validatePassword(input = {}) {
   return { values, errors }
 }
 
+/** Changement de son propre mot de passe : nouveau mot de passe + confirmation. */
+export function validatePasswordChange(input = {}) {
+  const errors = {}
+  const values = { password: password(errors, input.password) }
+  if (!errors.password && String(input.confirmation ?? '') !== values.password) {
+    errors.confirmation = 'Les deux mots de passe ne sont pas identiques.'
+  }
+  return { values, errors }
+}
+
 /** Formulaire de connexion (aucune règle de longueur : on ne décrit pas les mots de passe valides). */
 export function validateLogin(input = {}) {
   const errors = {}

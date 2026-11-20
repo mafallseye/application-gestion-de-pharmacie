@@ -32,9 +32,10 @@ export default function SalesPage() {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
 
-  // La période est filtrée côté serveur (l'historique peut dépasser la limite chargée).
-  const sales = useSales({ from, to, limit: LIMIT })
-  const rows = useMemo(() => filterSales(sales.data, { search, unpaidOnly }), [sales.data, search, unpaidOnly])
+  // La période est filtrée côté serveur (l'historique peut dépasser la limite chargée),
+  // et les impayées aussi : elles ne doivent pas dépendre de cette limite.
+  const sales = useSales({ from, to, unpaidOnly, limit: LIMIT })
+  const rows = useMemo(() => filterSales(sales.data, { search }), [sales.data, search])
   const filtering = search.trim() !== '' || unpaidOnly || from !== '' || to !== ''
 
   const setUnpaidOnly = (checked) => setParams(checked ? { impayees: '1' } : {}, { replace: true })

@@ -15,10 +15,23 @@ async function signIn(email, password) {
   if (error) throw toAppError(error)
 }
 
+// Déconnexion de cet appareil seulement : la session locale est supprimée avant
+// l'appel réseau, donc cela fonctionne hors ligne et sans toucher aux autres
+// postes. Une erreur réseau éventuelle (révocation côté serveur) est sans
+// conséquence pour l'utilisateur : elle est ignorée.
 async function signOut() {
-  const { error } = await supabase.auth.signOut()
+  await supabase.auth.signOut({ scope: 'local' })
+}
+
+/** Change le mot de passe de l'utilisateur connecté. */
+async function changePassword(password) {
+  const { error } = await supabase.auth.updateUser({ password })
   if (error) throw toAppError(error)
 }
+
+// Un compte désactivé ou un rôle modifié par un administrateur est pris en
+// compte sans rechargement, au plus tard après ce délai.
+const PROFILE_REFRESH_MS = 60_000
 
 /** À placer sous QueryClientProvider. */
 export function AuthProvider({ children }) {
@@ -44,6 +57,7 @@ export function AuthProvider({ children }) {
     queryKey: queryKeys.profile(user?.id),
     queryFn: () => fetchProfile(user.id),
     enabled: user !== null,
+    refetchInterval: PROFILE_REFRESH_MS,
   })
   const profile = user ? (profileQuery.data ?? null) : null
 
@@ -63,6 +77,7 @@ export function AuthProvider({ children }) {
       isAdmin: active && profile.role === 'admin',
       signIn,
       signOut,
+      changePassword,
     }
   }, [session, user, profile, profileQuery.isPending, profileQuery.isSuccess, profileQuery.error])
 

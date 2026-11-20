@@ -30,11 +30,47 @@ import { addToCart, balanceDue, cartCount, cartTotal, lineTotal, removeFromCart,
 import styles from './NewSalePage.module.css'
 
 const CATALOGUE_SIZE = 30
+// La caisse reste ouverte longtemps : prix et stock sont rechargés régulièrement.
+const CATALOGUE_REFRESH_MS = 45_000
+
+/**
+ * Quantité d'une ligne du panier, saisissable au clavier. Le texte en cours de
+ * frappe est gardé à part : un champ vide ou « 0 » ne modifie pas le panier, et
+ * la valeur réelle (bornée par le stock) revient à la sortie du champ.
+ */
+function QuantityInput({ line, onChange }) {
+  const [draft, setDraft] = useState(null)
+  return (
+    <input
+      className={styles.qty}
+      type="text"
+      inputMode="numeric"
+      autoComplete="off"
+      aria-label={`Quantité de ${line.name} (${line.stock} en stock)`}
+      data-numeric
+      value={draft ?? String(line.quantity)}
+      onFocus={(event) => event.target.select()}
+      onChange={(event) => {
+        const text = event.target.value.replace(/\D/g, '').slice(0, 6)
+        setDraft(text)
+        if (Number(text) >= 1) onChange(Number(text))
+      }}
+      onBlur={() => setDraft(null)}
+      onKeyDown={(event) => {
+        // Entrée valide la quantité sans envoyer la vente.
+        if (event.key === 'Enter') {
+          event.preventDefault()
+          event.target.blur()
+        }
+      }}
+    />
+  )
+}
 
 export default function NewSalePage() {
   usePageTitle('Nouvelle vente')
   const toast = useToast()
-  const medicines = useMedicines()
+  const medicines = useMedicines({ refetchInterval: CATALOGUE_REFRESH_MS })
   const customers = useCustomers()
   const createSale = useCreateSale()
 
@@ -87,6 +123,7 @@ export default function NewSalePage() {
         // On n'enregistre jamais plus que le total : le surplus est la monnaie rendue.
         paidAmount: Math.min(given, total),
         items: toSaleItems(cart),
+        expectedTotal: total,
       })
       setLastSale({ id: saleId, change: Math.max(0, given - total) })
       setSavedCart([])
@@ -95,7 +132,8 @@ export default function NewSalePage() {
       setSearch('')
       toast.success(`Vente n° ${saleId} enregistrée.`)
     } catch (error) {
-      // Le stock est rechargé par useCreateSale : le panier se resynchronise.
+      // Stock insuffisant, prix modifié… : useCreateSale recharge le catalogue
+      // et le panier affiché se resynchronise (quantités et prix).
       setServerError(errorMessage(error))
     }
   }
@@ -190,9 +228,10 @@ export default function NewSalePage() {
                           disabled={line.quantity <= 1}
                           onClick={() => updateCart(setQuantity(cart, line.medicine_id, line.quantity - 1))}
                         />
-                        <span className={styles.qty} data-numeric aria-label={`Quantité : ${line.quantity}`}>
-                          {line.quantity}
-                        </span>
+                        <QuantityInput
+                          line={line}
+                          onChange={(quantity) => updateCart(setQuantity(cart, line.medicine_id, quantity))}
+                        />
                         <IconButton
                           icon={Plus}
                           label={`Ajouter un ${line.name}`}
@@ -230,7 +269,7 @@ export default function NewSalePage() {
                     setCustomerError(null)
                   }}
                 >
-                  <option value="">Client de passage</option>
+                  <option value="">{customers.isPending ? 'Chargement des clients…' : 'Client de passage'}</option>
                   {(customers.data ?? []).map((customer) => (
                     <option key={customer.id} value={customer.id}>
                       {customer.name}
@@ -238,6 +277,19 @@ export default function NewSalePage() {
                   ))}
                 </Select>
               </Field>
+              {customers.isError ? (
+                <Alert
+                  tone="warning"
+                  title="La liste des clients n’a pas pu être chargée"
+                  action={
+                    <Button size="sm" variant="secondary" loading={customers.isFetching} onClick={() => customers.refetch()}>
+                      Réessayer
+                    </Button>
+                  }
+                >
+                  Seule une vente au comptant (client de passage) est possible pour le moment.
+                </Alert>
+              ) : null}
               <Field label="Montant payé" htmlFor="caisse-paye" error={paymentError} hint={paymentHint}>
                 <Input
                   inputMode="numeric"
@@ -252,7 +304,7 @@ export default function NewSalePage() {
               </Field>
               {serverError ? (
                 <Alert tone="danger" title="Vente non enregistrée">
-                  {serverError} Le stock a été actualisé : vérifiez le panier avant de réessayer.
+                  {serverError} Les prix et le stock ont été actualisés : vérifiez le panier avant de réessayer.
                 </Alert>
               ) : null}
               <Button type="submit" fullWidth icon={Receipt} disabled={cart.length === 0} loading={createSale.isPending}>

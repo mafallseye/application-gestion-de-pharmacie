@@ -5,38 +5,48 @@ import { invalidate, queryKeys } from '../../lib/queryKeys.js'
 import { supabase } from '../../lib/supabase.js'
 
 const WITH_SELLER = '*, seller:profiles(id,full_name,email)'
+const WITH_DETAILS = `${WITH_SELLER}, items:sale_items(*), payments(id,amount,created_at,author:profiles(id,full_name,email))`
 /**
  * Ventes les plus récentes d'abord, avec `seller` ({ id, full_name, email } ou null).
  * `from` / `to` (AAAA-MM-JJ inclus) limitent la période côté serveur ;
+ * `unpaidOnly` ne garde que les ventes avec un reste à payer (filtre serveur) ;
  * `limit` borne le volume chargé (l'historique grossit sans fin).
  */
-export async function listSales({ from, to, limit = 500 } = {}) {
+export async function listSales({ from, to, unpaidOnly = false, limit = 500 } = {}) {
   let query = supabase.from('sales').select(WITH_SELLER).order('sold_at', { ascending: false }).limit(limit)
   if (from) query = query.gte('sold_at', `${from}T00:00:00Z`)
   if (to) query = query.lte('sold_at', `${to}T23:59:59.999Z`)
+  if (unpaidOnly) query = query.gt('balance', 0)
   return unwrap(await query)
 }
 
-/** Une vente avec son vendeur et ses articles (`items`, dans l'ordre de saisie). */
+/**
+ * Une vente avec son vendeur, ses articles (`items`, dans l'ordre de saisie) et
+ * l'historique de ses paiements (`payments`, du plus ancien au plus récent).
+ */
 export async function getSale(id) {
   const sale = unwrap(
-    await supabase.from('sales').select(`${WITH_SELLER}, items:sale_items(*)`).eq('id', id).maybeSingle(),
+    await supabase.from('sales').select(WITH_DETAILS).eq('id', id).maybeSingle(),
   )
   if (!sale) throw new AppError('Cette vente est introuvable.')
   sale.items.sort((a, b) => a.id - b.id)
+  sale.payments.sort((a, b) => a.id - b.id)
   return sale
 }
 
 /**
  * Enregistre une vente (contrôle du stock et calcul du total faits en base).
- * items : [{ medicine_id, quantity }] — voir toSaleItems(cart). Renvoie l'id de la vente.
+ * items : [{ medicine_id, quantity }] — voir toSaleItems(cart).
+ * expectedTotal : total affiché à la caisse ; la base refuse la vente si les
+ * prix ont changé entre-temps. Renvoie l'id de la vente.
  */
-export async function createSale({ customerId = null, paidAmount, items }) {
+export async function createSale({ customerId = null, paidAmount, items, expectedTotal }) {
   return unwrap(
     await supabase.rpc('create_sale', {
       p_customer_id: customerId,
       p_paid_amount: paidAmount,
       p_items: items,
+      p_expected_total: expectedTotal,
     }),
   )
 }

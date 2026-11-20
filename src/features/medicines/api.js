@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { deleteRow, pick, saveRow } from '../../lib/crud.js'
-import { unwrap } from '../../lib/errors.js'
+import { deleteRow, fetchAllRows, pick, saveRow } from '../../lib/crud.js'
 import { invalidate, queryKeys } from '../../lib/queryKeys.js'
 import { supabase } from '../../lib/supabase.js'
 
@@ -18,7 +17,7 @@ const WITH_RELATIONS = '*, category:categories(id,name), supplier:suppliers(id,n
 
 /** Médicaments avec `category` et `supplier` ({ id, name } ou null). */
 export async function listMedicines() {
-  return unwrap(await supabase.from('medicines').select(WITH_RELATIONS).order('brand_name'))
+  return fetchAllRows(() => supabase.from('medicines').select(WITH_RELATIONS).order('brand_name').order('id'))
 }
 
 /** Crée (sans id) ou modifie (avec id). */
@@ -34,8 +33,9 @@ function refresh(queryClient) {
   return invalidate(queryClient, queryKeys.medicines, queryKeys.dashboard)
 }
 
-export function useMedicines() {
-  return useQuery({ queryKey: queryKeys.medicines, queryFn: listMedicines })
+/** `refetchInterval` (ms) : rechargement périodique, utilisé par la caisse pour suivre prix et stock. */
+export function useMedicines({ refetchInterval = false } = {}) {
+  return useQuery({ queryKey: queryKeys.medicines, queryFn: listMedicines, refetchInterval })
 }
 
 export function useSaveMedicine() {

@@ -46,6 +46,16 @@ describe('errorMessage', () => {
       /introuvable/,
     )
   })
+  it('traduit les refus de changement de mot de passe', () => {
+    expect(errorMessage({ code: 'same_password', status: 422, message: 'New password should be different' })).toMatch(
+      /différent de l'ancien/,
+    )
+    expect(errorMessage({ code: 'weak_password', status: 422, message: 'Password is too weak' })).toMatch(/trop faible/)
+  })
+  it('transmet le message « prix ont changé » de create_sale', () => {
+    const message = 'Les prix ont changé : le total est maintenant de 5400 FCFA. Vérifiez le panier.'
+    expect(errorMessage({ code: '22023', message })).toBe(message)
+  })
   it("n'affiche jamais un message technique inconnu", () => {
     const generic = 'Une erreur est survenue. Réessayez.'
     expect(errorMessage({ code: '42703', message: 'column "foo" does not exist' })).toBe(generic)

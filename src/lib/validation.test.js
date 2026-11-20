@@ -6,6 +6,7 @@ import {
   validateLogin,
   validateMedicine,
   validatePassword,
+  validatePasswordChange,
   validatePayment,
   validateSupplier,
   validateUser,
@@ -163,5 +164,24 @@ describe('validatePayment', () => {
     expect(validatePayment({ amount: '101' }, { max: 100 }).errors.amount).toMatch(/dépasse/)
     expect(validatePayment({ amount: '' }, { max: 100 }).errors.amount).toMatch(/obligatoire/)
     expect(validatePayment({ amount: '12.5' }, { max: 100 }).errors.amount).toMatch(/entier/)
+  })
+})
+
+describe('validatePasswordChange', () => {
+  it('accepte deux saisies identiques de 8 à 72 caractères', () => {
+    expect(validatePasswordChange({ password: 'nouveau-secret', confirmation: 'nouveau-secret' })).toEqual({
+      values: { password: 'nouveau-secret' },
+      errors: {},
+    })
+  })
+  it('refuse une confirmation différente', () => {
+    const { errors } = validatePasswordChange({ password: 'nouveau-secret', confirmation: 'nouveau-secrex' })
+    expect(errors).toEqual({ confirmation: 'Les deux mots de passe ne sont pas identiques.' })
+  })
+  it('signale d’abord un mot de passe trop court ou absent', () => {
+    expect(validatePasswordChange({ password: 'court', confirmation: 'court' }).errors).toEqual({
+      password: 'Le mot de passe doit contenir entre 8 et 72 caractères.',
+    })
+    expect(validatePasswordChange({}).errors.password).toBe('Le mot de passe est obligatoire.')
   })
 })

@@ -7,6 +7,22 @@ export function pick(source, columns) {
   return Object.fromEntries(columns.filter((c) => source[c] !== undefined).map((c) => [c, source[c]]))
 }
 
+export const PAGE_SIZE = 1000
+
+/**
+ * Charge toutes les lignes d'une liste, par blocs : l'API Supabase ne renvoie
+ * pas plus de 1000 lignes par requête. `buildQuery()` doit renvoyer une requête
+ * neuve à chaque appel, avec un ordre stable (terminer par l'id).
+ */
+export async function fetchAllRows(buildQuery, pageSize = PAGE_SIZE) {
+  const rows = []
+  for (;;) {
+    const page = unwrap(await buildQuery().range(rows.length, rows.length + pageSize - 1))
+    rows.push(...page)
+    if (page.length < pageSize) return rows
+  }
+}
+
 /**
  * Crée la ligne (sans `id`) ou la met à jour (avec `id`) et renvoie la ligne enregistrée.
  * `.single()` signale une mise à jour qui n'a touché aucune ligne : les règles

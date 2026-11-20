@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { pick, saveRow } from '../../lib/crud.js'
-import { functionError, unwrap } from '../../lib/errors.js'
+import { fetchAllRows, pick, saveRow } from '../../lib/crud.js'
+import { functionError } from '../../lib/errors.js'
 import { invalidate, queryKeys } from '../../lib/queryKeys.js'
 import { filterBySearch } from '../../lib/search.js'
 import { supabase } from '../../lib/supabase.js'
@@ -9,7 +9,7 @@ import { supabase } from '../../lib/supabase.js'
 const EDITABLE = ['full_name', 'role', 'active']
 
 export async function listProfiles() {
-  return unwrap(await supabase.from('profiles').select('*').order('full_name').order('email'))
+  return fetchAllRows(() => supabase.from('profiles').select('*').order('full_name').order('id'))
 }
 
 /** { id, full_name?, role?, active? } → profil mis à jour. */

@@ -57,7 +57,12 @@
 }
 
 .qty {
-  min-width: 2rem;
+  width: 3.25rem;
+  height: var(--control-height-sm);
+  padding: 0 var(--space-1);
+  border: 0;
+  border-inline: 1px solid var(--color-border);
+  background: var(--color-surface);
   font-weight: var(--weight-semibold);
   text-align: center;
 }

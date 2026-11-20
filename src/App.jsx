@@ -1,11 +1,11 @@
 import { Suspense, lazy } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Pill, Receipt, ShoppingCart, Tags, Truck, UserCog, Users } from 'lucide-react'
+import { CircleUser, LayoutDashboard, Pill, Receipt, ShoppingCart, Tags, Truck, UserCog, Users } from 'lucide-react'
 import { AppShell } from './components/layout/AppShell.jsx'
-import { PageLoader, ToastProvider, useToast } from './components/ui'
+import { PageLoader, ToastProvider } from './components/ui'
+import { ErrorBoundary } from './features/shared/ErrorBoundary.jsx'
 import { AuthProvider, useAuth } from './lib/auth.jsx'
-import { errorMessage } from './lib/errors.js'
 import { createQueryClient } from './lib/queryClient.js'
 import { isSupabaseConfigured } from './lib/supabase.js'
 
@@ -25,12 +25,7 @@ const CategoriesPage = lazy(() => import('./features/categories/CategoriesPage.j
 const CustomersPage = lazy(() => import('./features/customers/CustomersPage.jsx'))
 const SuppliersPage = lazy(() => import('./features/suppliers/SuppliersPage.jsx'))
 const UsersPage = lazy(() => import('./features/users/UsersPage.jsx'))
-// Aperçu du design system (données fictives, accessible sans connexion).
-const preview = (name) => lazy(() => import('./pages/DesignPreview.jsx').then((module) => ({ default: module[name] })))
-const DesignPreview = preview('DesignPreview')
-const LoginPreview = preview('LoginPreview')
-const PendingPreview = preview('PendingPreview')
-
+const AccountPage = lazy(() => import('./features/account/AccountPage.jsx'))
 const NAV_ITEMS = [
   { to: '/', label: 'Tableau de bord', icon: LayoutDashboard, end: true },
   { to: '/caisse', label: 'Nouvelle vente', icon: ShoppingCart },
@@ -40,21 +35,31 @@ const NAV_ITEMS = [
   { to: '/clients', label: 'Clients', icon: Users },
   { to: '/fournisseurs', label: 'Fournisseurs', icon: Truck },
   { to: '/utilisateurs', label: 'Utilisateurs', icon: UserCog, adminOnly: true },
+  { to: '/compte', label: 'Mon compte', icon: CircleUser },
 ]
 
-const previewRoutes = (
-  <>
-    <Route path="/apercu/connexion" element={<LoginPreview />} />
-    <Route path="/apercu/attente" element={<PendingPreview />} />
-    <Route path="/apercu/*" element={<DesignPreview />} />
-  </>
-)
+// Aperçu du design system (données fictives) : en développement seulement,
+// la démonstration du kit n'est pas livrée en production.
+function previewRoutes() {
+  if (!import.meta.env.DEV) return null
+  const preview = (name) => lazy(() => import('./pages/DesignPreview.jsx').then((module) => ({ default: module[name] })))
+  const DesignPreview = preview('DesignPreview')
+  const LoginPreview = preview('LoginPreview')
+  const PendingPreview = preview('PendingPreview')
+  return (
+    <>
+      <Route path="/apercu/connexion" element={<LoginPreview />} />
+      <Route path="/apercu/attente" element={<PendingPreview />} />
+      <Route path="/apercu/*" element={<DesignPreview />} />
+    </>
+  )
+}
+const PREVIEW_ROUTES = previewRoutes()
 
 /** Garde des pages connectées : session, profil actif, puis coque de l'application. */
 function ProtectedLayout() {
   const { loading, user, profile, profileError, isStaff, isAdmin, signOut } = useAuth()
   const location = useLocation()
-  const toast = useToast()
 
   if (loading) return <PageLoader />
   if (!user) return <Navigate to="/connexion" replace state={{ from: location.pathname + location.search }} />
@@ -65,11 +70,14 @@ function ProtectedLayout() {
     <AppShell
       user={{ name: profile.full_name, email: profile.email, role: profile.role }}
       navItems={NAV_ITEMS.filter((item) => isAdmin || !item.adminOnly)}
-      onSignOut={() => signOut().catch((error) => toast.error(errorMessage(error)))}
+      onSignOut={signOut}
     >
-      <Suspense fallback={<PageLoader fullScreen={false} />}>
-        <Outlet />
-      </Suspense>
+      {/* Une page en erreur n'emporte pas la coque ; changer de page efface l'erreur. */}
+      <ErrorBoundary resetKey={location.pathname}>
+        <Suspense fallback={<PageLoader fullScreen={false} />}>
+          <Outlet />
+        </Suspense>
+      </ErrorBoundary>
     </AppShell>
   )
 }
@@ -83,7 +91,7 @@ function AdminOnly() {
 function AppRoutes() {
   return (
     <Routes>
-      {previewRoutes}
+      {PREVIEW_ROUTES}
       <Route path="/connexion" element={<LoginPage />} />
       <Route element={<ProtectedLayout />}>
         <Route index element={<DashboardPage />} />
@@ -97,6 +105,7 @@ function AppRoutes() {
         <Route element={<AdminOnly />}>
           <Route path="utilisateurs" element={<UsersPage />} />
         </Route>
+        <Route path="compte" element={<AccountPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
@@ -107,7 +116,7 @@ function AppRoutes() {
 function SetupRoutes() {
   return (
     <Routes>
-      {previewRoutes}
+      {PREVIEW_ROUTES}
       <Route path="*" element={<SetupPage />} />
     </Routes>
   )
@@ -115,20 +124,22 @@ function SetupRoutes() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ToastProvider>
-          <Suspense fallback={<PageLoader />}>
-            {isSupabaseConfigured ? (
-              <AuthProvider>
-                <AppRoutes />
-              </AuthProvider>
-            ) : (
-              <SetupRoutes />
-            )}
-          </Suspense>
-        </ToastProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary fullScreen>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ToastProvider>
+            <Suspense fallback={<PageLoader />}>
+              {isSupabaseConfigured ? (
+                <AuthProvider>
+                  <AppRoutes />
+                </AuthProvider>
+              ) : (
+                <SetupRoutes />
+              )}
+            </Suspense>
+          </ToastProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }

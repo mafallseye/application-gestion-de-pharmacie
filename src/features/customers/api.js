@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { deleteRow, pick, saveRow } from '../../lib/crud.js'
-import { unwrap } from '../../lib/errors.js'
+import { deleteRow, fetchAllRows, pick, saveRow } from '../../lib/crud.js'
 import { invalidate, queryKeys } from '../../lib/queryKeys.js'
 import { filterBySearch } from '../../lib/search.js'
 import { supabase } from '../../lib/supabase.js'
@@ -8,7 +7,7 @@ import { supabase } from '../../lib/supabase.js'
 const COLUMNS = ['name', 'address', 'phone', 'fax', 'info']
 
 export async function listCustomers() {
-  return unwrap(await supabase.from('customers').select('*').order('name'))
+  return fetchAllRows(() => supabase.from('customers').select('*').order('name').order('id'))
 }
 
 /** Crée (sans id) ou modifie (avec id). */
