@@ -3,6 +3,7 @@
 // Appels de l'application (administrateur de la pharmacie, jeton Bearer) :
 //   POST { action: 'checkout', plan }   -> { url } : page de paiement PayDunya
 //   POST { action: 'verify', token }    -> { status } : vérifie un paiement
+//        (completed, pending, cancelled, failed, review, error, unknown)
 // Notification de PayDunya (IPN, sans jeton, formulaire) :
 //   POST data[hash], data[invoice][token], ...
 //
@@ -28,7 +29,12 @@ function json(status: number, body: unknown) {
   })
 }
 
-type PayDunyaConfig = { base: string; headers: Record<string, string>; masterKey: string }
+type PayDunyaConfig = {
+  base: string
+  headers: Record<string, string>
+  masterKey: string
+  mode: 'test' | 'live'
+}
 
 function payDunyaConfig(): PayDunyaConfig | null {
   const masterKey = Deno.env.get('PAYDUNYA_MASTER_KEY')
@@ -39,6 +45,7 @@ function payDunyaConfig(): PayDunyaConfig | null {
   return {
     base: live ? 'https://app.paydunya.com/api/v1' : 'https://app.paydunya.com/sandbox-api/v1',
     masterKey,
+    mode: live ? 'live' : 'test',
     headers: {
       'Content-Type': 'application/json',
       'PAYDUNYA-MASTER-KEY': masterKey,
@@ -61,39 +68,72 @@ function sameString(a: string, b: string) {
   return diff === 0
 }
 
+// Appel à PayDunya : une coupure réseau ou une réponse illisible donne null.
+async function payDunya(url: string, init: RequestInit) {
+  try {
+    const res = await fetch(url, { ...init, signal: AbortSignal.timeout(20000) })
+    const data = await res.json()
+    return res.ok && data && typeof data === 'object' ? data : null
+  } catch (error) {
+    console.error('billing: PayDunya injoignable', String(error))
+    return null
+  }
+}
+
 const validToken = (v: unknown): v is string => typeof v === 'string' && /^[A-Za-z0-9_-]{6,80}$/.test(v)
 
 /**
  * Redemande à PayDunya l'état de la facture et met notre paiement à jour.
- * Renvoie 'completed', 'pending', 'cancelled', 'failed' ou 'unknown'.
+ * Renvoie :
+ *   'completed' | 'cancelled' | 'failed'  état définitif
+ *   'review'    argent reçu mais montant ou référence incohérents : à vérifier à la main
+ *   'pending'   pas encore payé
+ *   'error'     vérification impossible pour l'instant (à retenter)
+ *   'unknown'   jeton inconnu
  */
 async function syncPayment(admin: SupabaseClient, cfg: PayDunyaConfig, token: string) {
-  const { data: payment } = await admin
+  const { data: payment, error: readError } = await admin
     .from('subscription_payments')
     .select('id, amount, status')
     .eq('provider_token', token)
     .maybeSingle()
+  if (readError) return 'error'
   if (!payment) return 'unknown'
-  if (payment.status === 'completed') return 'completed'
+  if (payment.status !== 'pending') return payment.status as string
 
-  const res = await fetch(`${cfg.base}/checkout-invoice/confirm/${encodeURIComponent(token)}`, {
+  const info = await payDunya(`${cfg.base}/checkout-invoice/confirm/${encodeURIComponent(token)}`, {
     headers: cfg.headers,
   })
-  const info = await res.json().catch(() => null)
-  if (!res.ok || !info || info.response_code !== '00') return 'pending'
+  if (!info || info.response_code !== '00') return 'error'
 
   const status = String(info.status ?? '')
   if (status === 'completed') {
     const paid = Number(info.invoice?.total_amount)
     const reference = String(info.custom_data?.payment_id ?? '')
-    if (paid !== Number(payment.amount) || reference !== String(payment.id)) {
-      console.error('billing: paiement incohérent', { token, paid, reference })
-      return 'failed'
+    const coherent =
+      paid === Number(payment.amount) &&
+      reference === String(payment.id) &&
+      info.invoice?.token === token &&
+      info.mode === cfg.mode
+    if (!coherent) {
+      console.error('billing: paiement reçu mais incohérent, à vérifier', {
+        token,
+        paid,
+        expected: Number(payment.amount),
+        reference,
+        mode: info.mode,
+      })
+      await admin
+        .from('subscription_payments')
+        .update({ status: 'review' })
+        .eq('id', payment.id)
+        .eq('status', 'pending')
+      return 'review'
     }
     const { error } = await admin.rpc('complete_subscription_payment', { p_token: token })
     if (error) {
       console.error('billing: validation impossible', error.message)
-      return 'pending'
+      return 'error'
     }
     return 'completed'
   }
@@ -129,7 +169,9 @@ Deno.serve(async (req) => {
     if (!sameString(hash, await sha512Hex(cfg.masterKey)) || !validToken(token)) {
       return json(400, { error: 'Notification refusée.' })
     }
-    await syncPayment(admin, cfg, token)
+    const result = await syncPayment(admin, cfg, token)
+    // Vérification impossible pour l'instant : on le dit, pour que la notification soit renvoyée.
+    if (result === 'error') return json(503, { error: 'Vérification momentanément impossible.' })
     return json(200, { ok: true })
   }
 
@@ -170,6 +212,17 @@ Deno.serve(async (req) => {
       .eq('id', caller.pharmacy_id)
       .maybeSingle()
 
+    // Plafond : pas plus de 5 demandes de paiement par heure et par pharmacie.
+    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { count } = await admin
+      .from('subscription_payments')
+      .select('id', { count: 'exact', head: true })
+      .eq('pharmacy_id', caller.pharmacy_id)
+      .gte('created_at', since)
+    if ((count ?? 0) >= 5) {
+      return json(429, { error: 'Trop de demandes de paiement. Réessayez dans une heure.' })
+    }
+
     const { data: payment, error: insertError } = await admin
       .from('subscription_payments')
       .insert({
@@ -184,7 +237,7 @@ Deno.serve(async (req) => {
     if (insertError || !payment) return json(500, { error: 'Paiement impossible pour le moment.' })
 
     const appUrl = (Deno.env.get('APP_URL') ?? 'https://pharmacaisse.vercel.app').replace(/\/+$/, '')
-    const res = await fetch(`${cfg.base}/checkout-invoice/create`, {
+    const created = await payDunya(`${cfg.base}/checkout-invoice/create`, {
       method: 'POST',
       headers: cfg.headers,
       body: JSON.stringify({
@@ -201,17 +254,23 @@ Deno.serve(async (req) => {
         },
       }),
     })
-    const created = await res.json().catch(() => null)
-    if (!res.ok || !created || created.response_code !== '00' || !validToken(created.token)) {
+    if (!created || created.response_code !== '00' || !validToken(created.token)) {
       console.error('billing: création de facture refusée', created?.response_code, created?.response_text)
       await admin.from('subscription_payments').update({ status: 'failed' }).eq('id', payment.id)
       return json(502, { error: 'Le service de paiement est indisponible. Réessayez dans un instant.' })
     }
 
-    await admin
+    // Sans jeton enregistré, un paiement ne pourrait jamais être rapproché :
+    // on ne donne pas la page de paiement si l'écriture échoue.
+    const { error: tokenError } = await admin
       .from('subscription_payments')
       .update({ provider_token: created.token })
       .eq('id', payment.id)
+    if (tokenError) {
+      console.error('billing: jeton non enregistré', tokenError.message)
+      await admin.from('subscription_payments').update({ status: 'failed' }).eq('id', payment.id)
+      return json(500, { error: 'Paiement impossible pour le moment. Réessayez dans un instant.' })
+    }
     return json(200, { url: created.response_text, token: created.token })
   }
 

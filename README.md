@@ -2,7 +2,7 @@
 
 # Gestion de pharmacie
 
-Application de gestion d'une pharmacie : stock de médicaments, caisse, ventes, clients, fournisseurs et utilisateurs.
+Application en ligne de gestion de pharmacie, proposée à plusieurs pharmacies (SaaS) : stock de médicaments, caisse, ventes, clients, fournisseurs et utilisateurs, avec abonnement payé par **PayDunya** (Orange Money, Wave, carte).
 
 Refonte complète de la première version (PHP / MySQL, 2022) en **React** avec une base **Supabase** (Postgres).
 
@@ -12,7 +12,9 @@ Refonte complète de la première version (PHP / MySQL, 2022) en **React** avec 
 - **Caisse** : recherche de médicaments, panier, monnaie à rendre, vente au comptant ou à crédit. Le stock est contrôlé et décrémenté par la base, dans la même transaction que la vente.
 - **Ventes** : historique, détail par article, encaissement d'un reste à payer, annulation (le stock est remis).
 - **Médicaments, catégories, clients, fournisseurs** : listes avec recherche et filtres, ajout, modification, suppression.
-- **Utilisateurs** : comptes créés par un administrateur, avec trois rôles.
+- **Utilisateurs** : comptes créés par l'administrateur de la pharmacie, avec trois rôles.
+- **Plusieurs pharmacies** : chaque pharmacie s'inscrit, crée son espace et ne voit que ses propres données ; ses ventes sont numérotées à part.
+- **Abonnement** : 14 jours d'essai, puis offre mensuelle ou annuelle payée en ligne. Sans accès en cours, la pharmacie passe en lecture seule (elle garde ses données).
 
 | Rôle | Peut faire |
 |---|---|
@@ -29,9 +31,11 @@ React 19 · Vite · React Router · TanStack Query · Supabase (Postgres, Auth, 
 La clé utilisée par le navigateur est publique par nature : la protection est faite **dans la base**.
 
 - **Règles d'accès par ligne (RLS)** sur toutes les tables, selon le rôle ; aucun droit pour un visiteur non connecté.
-- **Compte inactif par défaut** : un compte qui n'a pas été activé par un administrateur ne voit aucune donnée.
+- **Cloisonnement par pharmacie** : chaque ligne appartient à une pharmacie ; les règles d'accès et les clés étrangères empêchent toute lecture ou écriture d'une pharmacie à l'autre.
+- **Compte sans pharmacie ou désactivé** : il ne voit aucune donnée.
+- **Paiements** : un abonnement n'est activé qu'après vérification directe auprès de PayDunya (serveur à serveur), jamais sur la seule foi du navigateur ou d'une notification.
 - **Ventes et encaissements** uniquement par des fonctions de la base (`create_sale`, `record_payment`) qui vérifient le stock et les montants.
-- **Gestion des comptes** par une fonction serveur (`admin-users`) réservée aux administrateurs ; la clé de service ne quitte jamais le serveur.
+- **Gestion des comptes** par une fonction serveur (`admin-users`) réservée à l'administrateur de la pharmacie ; la clé de service ne quitte jamais le serveur.
 - Aucun secret dans le dépôt.
 
 ## Lancer le projet
@@ -54,14 +58,22 @@ npm run dev
 ### Préparer la base
 
 1. Exécuter dans l'ordre les fichiers de `supabase/migrations/` (SQL Editor du tableau de bord, ou `supabase db push` avec la CLI).
-2. Déployer la fonction `supabase/functions/admin-users` (`supabase functions deploy admin-users`).
-3. Créer le premier compte dans Authentication → Users → Add user, puis l'activer comme administrateur :
+2. Déployer les fonctions `admin-users` et `billing` (`supabase functions deploy admin-users`, puis `billing`).
+3. Laisser l'inscription activée (Authentication → Sign In / Providers) : chaque pharmacie crée son compte, puis sa pharmacie, depuis l'application. Pour de vraies inscriptions, brancher un service d'envoi d'e-mails (SMTP) : celui fourni par défaut est limité à quelques messages par heure.
 
-```sql
-update public.profiles set role = 'admin', active = true where email = 'adresse@exemple.com';
-```
+### Paiement en ligne (PayDunya)
 
-4. Recommandé : désactiver l'inscription libre (Authentication → Sign In / Providers → « Allow new users to sign up »). Les comptes suivants se créent depuis l'écran Utilisateurs.
+Enregistrer ces secrets dans Supabase (Edge Functions → Secrets) ; ils ne vont jamais dans le dépôt ni dans le navigateur :
+
+| Secret | Valeur |
+|---|---|
+| `PAYDUNYA_MASTER_KEY` | clé principale du compte PayDunya |
+| `PAYDUNYA_PRIVATE_KEY` | clé privée (de test ou de production) |
+| `PAYDUNYA_TOKEN` | token (de test ou de production) |
+| `PAYDUNYA_MODE` | `test` ou `live` |
+| `APP_URL` | adresse publique du site, pour le retour après paiement |
+
+Les offres et leurs prix sont dans la table `plans`.
 
 ### Commandes
 
