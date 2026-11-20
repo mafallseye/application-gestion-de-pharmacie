@@ -1,44 +1,30 @@
 * {
   box-sizing: border-box;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  list-style: none;
 }
 table {
   text-align: center;
-  margin: 0;
-  padding: 0;
-  color: black;
-  min-height: 50vh;
   width: 100%;
-  top: 50%;
-  left: 50%;
 }
-th {
+.table th {
   font-size: 16px;
   background-color: brown;
-}
-.text {
-  background-color: blue;
-  font-style: italic;
-  font-size: 16px;
-}
-form {
-  float: right;
-}
-.trash {
-  height: 30px;
-  width: 30%;
-  background: red;
-  background-size: cover;
   color: white;
-  font-size: 14px;
-  text-align: center;
+  box-shadow: none;
 }
-.editer {
-  height: 30px;
-  width: 30%;
-  background: green;
-  color: white;
-  font-size: 14px;
-  text-align: center;
+td {
+  vertical-align: middle;
+}
+form.inline {
+  display: inline;
+}
+form.edit {
+  max-width: 560px;
+}
+form.search {
+  min-width: 280px;
+}
+.login {
+  max-width: 420px;
+  margin: 5vh auto;
 }

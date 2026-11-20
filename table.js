@@ -1,33 +1,22 @@
-const textd = document.querySelectorAll("tr");
-console.log(textd);
-textd.forEach((textd) => {
-  textd.addEventListener("click", () => {
-    console.log("click !");
-    textd.classList.add("text");
+// Demande une confirmation avant d'envoyer un formulaire de suppression.
+document.querySelectorAll("form[data-confirm]").forEach((form) => {
+  form.addEventListener("submit", (event) => {
+    if (!window.confirm(form.dataset.confirm)) {
+      event.preventDefault();
+    }
   });
 });
-//search dans le console
 
-// const inputName = document.querySelector('input[type="search"]');
-// inputName.addEventListener("input", (e) => {
-//   console.log(e.target.value);
-// });
-function searchTable() {
-  let input, filter, table, tr, td, textValue;
-  input = document.getElementById("search");
-  filter = input.value.toUpperCase();
-  table = document.querySelector("table");
-  tr = table.getElementsByTagName("tr");
-  for (let i = 0; i < tr.length; i++) {
-    // console.log("it is work");
-    td = tr[i].getElementsByTagName("td")[0];
-    if (td) {
-      textValue = td.textContent || td.innerText;
-      if (textValue.toUpperCase().indexOf(filter) > -1) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
+// Filtre les lignes du tableau pendant la saisie dans le champ de recherche.
+const search = document.getElementById("search");
+const table = document.querySelector("table");
+if (search && table) {
+  search.addEventListener("input", () => {
+    const filter = search.value.toUpperCase();
+    table.querySelectorAll("tr").forEach((row) => {
+      if (row.querySelector("td")) {
+        row.style.display = row.textContent.toUpperCase().includes(filter) ? "" : "none";
       }
-    }
-  }
+    });
+  });
 }

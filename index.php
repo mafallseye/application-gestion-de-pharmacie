@@ -1,94 +1,58 @@
-<!doctype html>
-<html lang="en">
+<?php
+require __DIR__ . '/inc/app.php';
 
-<head>
+if (!empty($_SESSION['user_id'])) {
+    redirect('tableau.php');
+}
 
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+$error = null;
+if (is_post()) {
+    csrf_check();
+    $email = is_string($_POST['email'] ?? null) ? trim($_POST['email']) : '';
+    $password = is_string($_POST['password'] ?? null) ? $_POST['password'] : '';
 
-	<!-- Bootstrap CSS -->
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    // Frein aux essais répétés : 5 échecs, puis 5 minutes d'attente.
+    $tries = $_SESSION['login_tries'] ?? 0;
+    $until = $_SESSION['login_blocked_until'] ?? 0;
+    if (time() < $until) {
+        $error = 'Trop de tentatives. Réessayez dans quelques minutes.';
+    } else {
+        $id = ($email !== '' && $password !== '') ? attempt_login($email, $password) : null;
+        if ($id !== null) {
+            session_regenerate_id(true);
+            $_SESSION = ['user_id' => $id];
+            redirect('tableau.php');
+        }
+        $tries++;
+        $_SESSION['login_tries'] = $tries;
+        if ($tries >= 5) {
+            $_SESSION['login_blocked_until'] = time() + 300;
+            $_SESSION['login_tries'] = 0;
+        }
+        $error = 'E-mail ou mot de passe incorrect.';
+    }
+}
 
-	<title>Hello, world!</title>
-	<!-- <script>
-		function validateForm() {
-			let x = document.forms["myForm"]["fname"].value;
-			if (x == "") {
-				alert("Name must be filled out");
-				return false;
-			}
-		} -->
-	</script>
-</head>
-
-<body>
-	<div class="left">
-		<img src="phar.jpg" class="rounded" alt="Cinque Terre">
-	</div>
-	<form method="POST" name="myForm" onsubmit="return validateForm()" method>
-		<div class="mb-3 mt-3" class="right">
-			<label for="email" class="form-label">Email:</label>
-			<input type="email" class="form-control" id="email" placeholder="Enter email" name="fname" required>
-		</div>
-		<div class="mb-3">
-			<label for="pwd" class="form-label">Password:</label>
-			<input type="password" class="form-control" id="pwd" placeholder="Enter password" name="fname" required>
-		</div>
-		<div class="form-check mb-3">
-			<label class="form-check-label">
-				<input class="form-check-input" type="checkbox" name="remember" required> Remember me
-			</label>
-		</div>
-		<button type="submit" class="btn btn-primary" name="valider">Submit</button>
-	</form>
-	<?php
-	@$email = $_POST['email'];
-	@$pass =  $_POST['pswd'];
-
-	if (isset($_POST['valider'])) {
-		if ($email = "maguettefseye@gmail.com" && $pass = "mafall97") {
-
-			header('location:tableau.php');
-		} else {
-			echo "erreur";
-		}
-	}
-	?>
-
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-
-
-</body>
-
-
-
-<footer>
-	<p>&copy; <?php echo date('Y'); ?> login form. All Rights Reserved | Design by M F S.</p>
-</footer>
-
-</body>
-
-</html>
-<style>
-	* {
-		box-sizing: border-box;
-		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-		background: lightgray;
-	}
-
-	div {
-		width: 30%;
-		margin-left: 30%;
-
-	}
-
-	button {
-		width: 10%;
-		margin-left: 30%;
-	}
-
-	footer {
-		margin-top: 100%;
-		text-align: center;
-	}
-</style>
+page_header('Connexion', false);
+?>
+    <div class="login">
+        <img src="phar.jpg" class="rounded img-fluid mb-3" alt="Pharmacie">
+        <h1 class="h4">Connexion</h1>
+<?php if ($error !== null) { ?>
+        <div class="alert alert-danger"><?= e($error) ?></div>
+<?php } ?>
+        <form method="POST" class="edit">
+            <?= csrf_field() ?>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" autocomplete="username" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Mot de passe</label>
+                <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Se connecter</button>
+        </form>
+    </div>
+<?php
+page_footer();
