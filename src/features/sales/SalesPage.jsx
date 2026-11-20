@@ -61,6 +61,7 @@ export default function SalesPage() {
         <>
           <Toolbar>
             <SearchInput value={search} onChange={setSearch} placeholder="Client, vendeur ou n° de vente…" />
+            <div className={shared.filters}>
             <Input
               type="date"
               value={from}
@@ -83,6 +84,7 @@ export default function SalesPage() {
               <input type="checkbox" checked={unpaidOnly} onChange={(event) => setUnpaidOnly(event.target.checked)} />
               Impayées seulement
             </label>
+            </div>
           </Toolbar>
           <DataTable
             caption="Liste des ventes"

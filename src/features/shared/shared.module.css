@@ -40,10 +40,11 @@
   width: auto;
 }
 
-.toolbarActions {
+.filters {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .checkbox {
@@ -71,13 +72,12 @@
 }
 
 @media (max-width: 640px) {
-  .filter,
-  .dateFilter,
-  .toolbarActions {
+  .filters {
     width: 100%;
   }
 
-  .toolbarActions > * {
-    flex: 1 1 auto;
+  .filter,
+  .dateFilter {
+    flex: 1 1 9rem;
   }
 }

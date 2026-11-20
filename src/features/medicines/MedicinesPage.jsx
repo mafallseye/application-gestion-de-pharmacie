@@ -170,6 +170,7 @@ export default function MedicinesPage() {
         <>
           <Toolbar>
             <SearchInput value={search} onChange={setSearch} placeholder="Rechercher un médicament…" />
+            <div className={shared.filters}>
             <Select
               value={categoryId}
               onChange={(event) => setParam('categorie', event.target.value)}
@@ -191,6 +192,7 @@ export default function MedicinesPage() {
                 </option>
               ))}
             </Select>
+            </div>
           </Toolbar>
           <DataTable
             caption="Liste des médicaments"
