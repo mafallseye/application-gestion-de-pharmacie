@@ -171,27 +171,27 @@ export default function MedicinesPage() {
           <Toolbar>
             <SearchInput value={search} onChange={setSearch} placeholder="Rechercher un médicament…" />
             <div className={shared.filters}>
-            <Select
-              value={categoryId}
-              onChange={(event) => setParam('categorie', event.target.value)}
-              aria-label="Catégorie"
-              className={shared.filter}
-            >
-              <option value="">Toutes les catégories</option>
-              {(categories.data ?? []).map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
-            <Select value={status} onChange={(event) => setParam('etat', event.target.value)} aria-label="État" className={shared.filter}>
-              <option value="">Tous les états</option>
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
+              <Select
+                value={categoryId}
+                onChange={(event) => setParam('categorie', event.target.value)}
+                aria-label="Catégorie"
+                className={shared.filter}
+              >
+                <option value="">Toutes les catégories</option>
+                {(categories.data ?? []).map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </Select>
+              <Select value={status} onChange={(event) => setParam('etat', event.target.value)} aria-label="État" className={shared.filter}>
+                <option value="">Tous les états</option>
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
             </div>
           </Toolbar>
           <DataTable

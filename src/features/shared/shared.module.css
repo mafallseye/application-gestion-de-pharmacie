@@ -36,8 +36,12 @@
   min-width: 12rem;
 }
 
-.dateFilter {
-  width: auto;
+.inlineField {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
 }
 
 .filters {
@@ -77,7 +81,7 @@
   }
 
   .filter,
-  .dateFilter {
+  .inlineField {
     flex: 1 1 9rem;
   }
 }

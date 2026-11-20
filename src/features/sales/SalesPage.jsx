@@ -62,28 +62,18 @@ export default function SalesPage() {
           <Toolbar>
             <SearchInput value={search} onChange={setSearch} placeholder="Client, vendeur ou n° de vente…" />
             <div className={shared.filters}>
-            <Input
-              type="date"
-              value={from}
-              max={to || undefined}
-              onChange={(event) => setFrom(event.target.value)}
-              aria-label="Du (date de début)"
-              title="Date de début"
-              className={shared.dateFilter}
-            />
-            <Input
-              type="date"
-              value={to}
-              min={from || undefined}
-              onChange={(event) => setTo(event.target.value)}
-              aria-label="Au (date de fin)"
-              title="Date de fin"
-              className={shared.dateFilter}
-            />
-            <label className={shared.checkbox}>
-              <input type="checkbox" checked={unpaidOnly} onChange={(event) => setUnpaidOnly(event.target.checked)} />
-              Impayées seulement
-            </label>
+              <label className={shared.inlineField}>
+                Du
+                <Input type="date" value={from} max={to || undefined} onChange={(event) => setFrom(event.target.value)} />
+              </label>
+              <label className={shared.inlineField}>
+                au
+                <Input type="date" value={to} min={from || undefined} onChange={(event) => setTo(event.target.value)} />
+              </label>
+              <label className={shared.checkbox}>
+                <input type="checkbox" checked={unpaidOnly} onChange={(event) => setUnpaidOnly(event.target.checked)} />
+                Impayées seulement
+              </label>
             </div>
           </Toolbar>
           <DataTable

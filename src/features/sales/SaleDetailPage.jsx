@@ -156,9 +156,10 @@ export default function SaleDetailPage() {
           </dl>
         </Card>
 
-        <Card title="Articles" padded={false}>
+        <section>
+          <h2 className={styles.sectionTitle}>Articles</h2>
           <DataTable caption="Articles de la vente" columns={ITEM_COLUMNS} rows={data.items} rowKey={(item) => item.id} mobileCards minWidth="32rem" />
-        </Card>
+        </section>
       </Stack>
 
       <FormModal
