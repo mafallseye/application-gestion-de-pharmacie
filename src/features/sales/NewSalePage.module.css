@@ -1,0 +1,112 @@
+/* Caisse : catalogue à gauche, panier à droite (empilés sous 1100px). */
+.pos {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(20rem, 2fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.catalogue {
+  margin-top: var(--space-3);
+}
+
+.catalogueItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 3.75rem;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.catalogueItem:last-child {
+  border-bottom: 0;
+}
+
+.cataloguePrice {
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.cart {
+  margin-bottom: var(--space-2);
+}
+
+.cartLine {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.lineControls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  grid-row: span 2;
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.qty {
+  min-width: 2rem;
+  font-weight: var(--weight-semibold);
+  text-align: center;
+}
+
+.lineTotal {
+  font-weight: var(--weight-semibold);
+}
+
+.stockNote {
+  grid-column: 1 / -1;
+  color: var(--tone-warning-fg);
+  font-size: var(--text-sm);
+}
+
+.totalRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  color: var(--color-text-muted);
+}
+
+.totalRow strong {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.015em;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (max-width: 1100px) {
+  .pos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .catalogueItem {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .cataloguePrice {
+    display: none;
+  }
+}

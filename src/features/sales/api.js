@@ -5,9 +5,6 @@ import { invalidate, queryKeys } from '../../lib/queryKeys.js'
 import { supabase } from '../../lib/supabase.js'
 
 const WITH_SELLER = '*, seller:profiles(id,full_name,email)'
-const PAYMENT_CONFLICT =
-  "Encaissement impossible : la vente a été modifiée entre-temps ou vous n'avez pas les droits nécessaires. Actualisez la page et réessayez."
-
 /**
  * Ventes les plus récentes d'abord, avec `seller` ({ id, full_name, email } ou null).
  * `from` / `to` (AAAA-MM-JJ inclus) limitent la période côté serveur ;
@@ -23,9 +20,9 @@ export async function listSales({ from, to, limit = 500 } = {}) {
 /** Une vente avec son vendeur et ses articles (`items`, dans l'ordre de saisie). */
 export async function getSale(id) {
   const sale = unwrap(
-    await supabase.from('sales').select(`${WITH_SELLER}, items:sale_items(*)`).eq('id', id).single(),
-    { PGRST116: 'Cette vente est introuvable.' },
+    await supabase.from('sales').select(`${WITH_SELLER}, items:sale_items(*)`).eq('id', id).maybeSingle(),
   )
+  if (!sale) throw new AppError('Cette vente est introuvable.')
   sale.items.sort((a, b) => a.id - b.id)
   return sale
 }
@@ -45,22 +42,11 @@ export async function createSale({ customerId = null, paidAmount, items }) {
 }
 
 /**
- * Ajoute `amount` au montant déjà payé de la vente `sale` (telle qu'affichée).
- * Le filtre sur l'ancien montant évite d'écraser un encaissement saisi au même
- * moment sur un autre poste : dans ce cas aucune ligne n'est modifiée.
+ * Encaisse `amount` sur la vente (RPC record_payment : ajout atomique, refuse
+ * de dépasser le reste à payer). Renvoie le nouveau montant payé.
  */
-export async function recordPayment({ sale, amount }) {
-  const rows = unwrap(
-    await supabase
-      .from('sales')
-      .update({ paid_amount: Number(sale.paid_amount) + amount })
-      .eq('id', sale.id)
-      .eq('paid_amount', sale.paid_amount)
-      .select(),
-    { 23514: 'Le montant dépasse le reste à payer.' },
-  )
-  if (rows.length === 0) throw new AppError(PAYMENT_CONFLICT)
-  return rows[0]
+export async function recordPayment({ saleId, amount }) {
+  return unwrap(await supabase.rpc('record_payment', { p_sale_id: saleId, p_amount: amount }))
 }
 
 /** Supprime une vente (administrateur) : le stock est remis en base. */
@@ -72,8 +58,9 @@ export function useSales(filters = {}) {
   return useQuery({ queryKey: queryKeys.salesList(filters), queryFn: () => listSales(filters) })
 }
 
-export function useSale(id) {
-  return useQuery({ queryKey: queryKeys.sale(id), queryFn: () => getSale(id), enabled: id != null })
+/** `enabled: false` suspend la requête (ex. pendant la suppression de la vente affichée). */
+export function useSale(id, { enabled = true } = {}) {
+  return useQuery({ queryKey: queryKeys.sale(id), queryFn: () => getSale(id), enabled: enabled && id != null })
 }
 
 export function useCreateSale() {

@@ -6,6 +6,10 @@ export function saleBalance(sale) {
   return balanceDue(sale.grand_total, sale.paid_amount)
 }
 
+export function customerLabel(sale) {
+  return sale.customer_name || 'Client de passage'
+}
+
 /** 'paid' | 'partial' | 'unpaid' */
 export function paymentStatus(sale) {
   if (saleBalance(sale) === 0) return 'paid'
