@@ -1,3 +1,7 @@
 # La fonction vérifie elle-même le jeton et le rôle administrateur de l'appelant.
 [functions.admin-users]
 verify_jwt = false
+
+# La fonction authentifie elle-même l'appelant et reçoit aussi la notification de PayDunya.
+[functions.billing]
+verify_jwt = false
