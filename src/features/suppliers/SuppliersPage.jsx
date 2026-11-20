@@ -24,7 +24,7 @@ const LABELS = {
 const fields = (form) => <ContactFields prefix="fournisseur" namePlaceholder="ex. Laborex Sénégal" {...form} />
 
 export default function SuppliersPage() {
-  const { isManager } = useAuth()
+  const { canManage } = useAuth()
   return (
     <EntityPage
       title="Fournisseurs"
@@ -39,9 +39,9 @@ export default function SuppliersPage() {
       validate={validateSupplier}
       emptyValues={EMPTY_CONTACT}
       fields={fields}
-      canCreate={isManager}
-      canEdit={isManager}
-      canDelete={isManager}
+      canCreate={canManage}
+      canEdit={canManage}
+      canDelete={canManage}
     />
   )
 }

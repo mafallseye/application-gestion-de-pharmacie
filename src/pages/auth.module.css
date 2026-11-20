@@ -18,3 +18,14 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* Action discrète dans un pied de page (même aspect qu'un lien). */
+.linkButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}

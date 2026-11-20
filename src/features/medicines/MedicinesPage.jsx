@@ -50,7 +50,7 @@ function toFormValues(medicine) {
 export default function MedicinesPage() {
   usePageTitle('Médicaments')
   const toast = useToast()
-  const { isManager } = useAuth()
+  const { canManage } = useAuth()
   const medicines = useMedicines()
   const categories = useCategories()
   const suppliers = useSuppliers()
@@ -117,7 +117,7 @@ export default function MedicinesPage() {
         ),
       },
     ]
-    if (!isManager) return base
+    if (!canManage) return base
     return [
       ...base,
       {
@@ -133,7 +133,7 @@ export default function MedicinesPage() {
         ),
       },
     ]
-  }, [isManager])
+  }, [canManage])
 
   const confirmDelete = async () => {
     try {
@@ -154,7 +154,7 @@ export default function MedicinesPage() {
     return save.mutateAsync({ id: editing.id, ...values, quantity })
   }
 
-  const addButton = isManager ? (
+  const addButton = canManage ? (
     <Button icon={Plus} onClick={() => setEditing(null)}>
       Ajouter un médicament
     </Button>

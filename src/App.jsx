@@ -1,9 +1,10 @@
 import { Suspense, lazy } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
-import { CircleUser, LayoutDashboard, Pill, Receipt, ShoppingCart, Tags, Truck, UserCog, Users } from 'lucide-react'
+import { CircleUser, CreditCard, LayoutDashboard, Pill, Receipt, ShoppingCart, Tags, Truck, UserCog, Users } from 'lucide-react'
 import { AppShell } from './components/layout/AppShell.jsx'
 import { PageLoader, ToastProvider } from './components/ui'
+import { SubscriptionBanner } from './features/billing/SubscriptionBanner.jsx'
 import { ErrorBoundary } from './features/shared/ErrorBoundary.jsx'
 import { AuthProvider, useAuth } from './lib/auth.jsx'
 import { createQueryClient } from './lib/queryClient.js'
@@ -25,6 +26,9 @@ const CategoriesPage = lazy(() => import('./features/categories/CategoriesPage.j
 const CustomersPage = lazy(() => import('./features/customers/CustomersPage.jsx'))
 const SuppliersPage = lazy(() => import('./features/suppliers/SuppliersPage.jsx'))
 const UsersPage = lazy(() => import('./features/users/UsersPage.jsx'))
+const SignupPage = lazy(() => import('./pages/SignupPage.jsx'))
+const CreatePharmacyPage = lazy(() => import('./pages/CreatePharmacyPage.jsx'))
+const SubscriptionPage = lazy(() => import('./features/billing/SubscriptionPage.jsx'))
 const AccountPage = lazy(() => import('./features/account/AccountPage.jsx'))
 const NAV_ITEMS = [
   { to: '/', label: 'Tableau de bord', icon: LayoutDashboard, end: true },
@@ -35,6 +39,7 @@ const NAV_ITEMS = [
   { to: '/clients', label: 'Clients', icon: Users },
   { to: '/fournisseurs', label: 'Fournisseurs', icon: Truck },
   { to: '/utilisateurs', label: 'Utilisateurs', icon: UserCog, adminOnly: true },
+  { to: '/abonnement', label: 'Abonnement', icon: CreditCard, adminOnly: true },
   { to: '/compte', label: 'Mon compte', icon: CircleUser },
 ]
 
@@ -56,22 +61,25 @@ function previewRoutes() {
 }
 const PREVIEW_ROUTES = previewRoutes()
 
-/** Garde des pages connectées : session, profil actif, puis coque de l'application. */
+/** Garde des pages connectées : session, pharmacie, profil actif, puis coque de l'application. */
 function ProtectedLayout() {
-  const { loading, user, profile, profileError, isStaff, isAdmin, signOut } = useAuth()
+  const { loading, user, profile, profileError, needsPharmacy, pharmacy, isStaff, isAdmin, signOut } = useAuth()
   const location = useLocation()
 
   if (loading) return <PageLoader />
   if (!user) return <Navigate to="/connexion" replace state={{ from: location.pathname + location.search }} />
   if (!profile && profileError) return <AccountStatusPage error={profileError} />
-  if (!isStaff) return <AccountStatusPage />
+  if (needsPharmacy) return <CreatePharmacyPage />
+  if (!isStaff || !pharmacy) return <AccountStatusPage />
 
   return (
     <AppShell
       user={{ name: profile.full_name, email: profile.email, role: profile.role }}
       navItems={NAV_ITEMS.filter((item) => isAdmin || !item.adminOnly)}
+      brandHint={pharmacy.name}
       onSignOut={signOut}
     >
+      <SubscriptionBanner />
       {/* Une page en erreur n'emporte pas la coque ; changer de page efface l'erreur. */}
       <ErrorBoundary resetKey={location.pathname}>
         <Suspense fallback={<PageLoader fullScreen={false} />}>
@@ -93,6 +101,7 @@ function AppRoutes() {
     <Routes>
       {PREVIEW_ROUTES}
       <Route path="/connexion" element={<LoginPage />} />
+      <Route path="/inscription" element={<SignupPage />} />
       <Route element={<ProtectedLayout />}>
         <Route index element={<DashboardPage />} />
         <Route path="caisse" element={<NewSalePage />} />
@@ -104,6 +113,7 @@ function AppRoutes() {
         <Route path="fournisseurs" element={<SuppliersPage />} />
         <Route element={<AdminOnly />}>
           <Route path="utilisateurs" element={<UsersPage />} />
+          <Route path="abonnement" element={<SubscriptionPage />} />
         </Route>
         <Route path="compte" element={<AccountPage />} />
         <Route path="*" element={<NotFoundPage />} />

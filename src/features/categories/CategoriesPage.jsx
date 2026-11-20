@@ -39,7 +39,7 @@ const fields = ({ errors, bind }) => (
 )
 
 export default function CategoriesPage() {
-  const { isManager } = useAuth()
+  const { canManage } = useAuth()
   return (
     <EntityPage
       title="Catégories"
@@ -54,9 +54,9 @@ export default function CategoriesPage() {
       validate={validateCategory}
       emptyValues={EMPTY}
       fields={fields}
-      canCreate={isManager}
-      canEdit={isManager}
-      canDelete={isManager}
+      canCreate={canManage}
+      canEdit={canManage}
+      canDelete={canManage}
     />
   )
 }

@@ -100,9 +100,9 @@ describe('syncCart', () => {
 
 describe('ventes : solde et filtres', () => {
   const sales = [
-    { id: 1, customer_name: 'Awa Ndiaye', grand_total: 5000, paid_amount: 5000, sold_at: '2026-11-18T10:00:00+00:00' },
-    { id: 2, customer_name: '', grand_total: 3000, paid_amount: 1000, sold_at: '2026-11-19T23:30:00+00:00' },
-    { id: 3, customer_name: 'Élodie Sarr', grand_total: 800, paid_amount: 0, sold_at: '2026-11-20T08:00:00+00:00' },
+    { id: 1, number: 41, customer_name: 'Awa Ndiaye', grand_total: 5000, paid_amount: 5000, sold_at: '2026-11-18T10:00:00+00:00' },
+    { id: 2, number: 42, customer_name: '', grand_total: 3000, paid_amount: 1000, sold_at: '2026-11-19T23:30:00+00:00' },
+    { id: 3, number: 43, customer_name: 'Élodie Sarr', grand_total: 800, paid_amount: 0, sold_at: '2026-11-20T08:00:00+00:00' },
   ]
   const ids = (list) => list.map((sale) => sale.id)
 
@@ -113,6 +113,9 @@ describe('ventes : solde et filtres', () => {
   it('filtre par recherche (sans accents), impayés et période', () => {
     expect(ids(filterSales(sales))).toEqual([1, 2, 3])
     expect(ids(filterSales(sales, { search: 'elodie' }))).toEqual([3])
+    // La recherche porte sur le numéro de vente affiché, pas sur l'identifiant technique.
+    expect(ids(filterSales(sales, { search: '42' }))).toEqual([2])
+    expect(ids(filterSales(sales, { search: '2' }))).toEqual([2])
     expect(ids(filterSales(sales, { unpaidOnly: true }))).toEqual([2, 3])
     expect(ids(filterSales(sales, { from: '2026-11-19', to: '2026-11-19' }))).toEqual([2])
   })

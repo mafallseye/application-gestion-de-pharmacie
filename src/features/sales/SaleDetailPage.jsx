@@ -51,15 +51,18 @@ const backButton = (
 export default function SaleDetailPage() {
   const { id } = useParams()
   const saleId = /^\d+$/.test(id) ? Number(id) : null
-  usePageTitle(saleId ? `Vente n° ${saleId}` : 'Vente introuvable')
+
   const navigate = useNavigate()
   const toast = useToast()
-  const { isAdmin } = useAuth()
+  const { isAdmin, canWrite, canSell } = useAuth()
 
   // Pendant l'annulation, la requête est suspendue : elle ne doit pas
   // recharger une vente qui vient d'être supprimée.
   const [cancelling, setCancelling] = useState(false)
   const sale = useSale(saleId, { enabled: !cancelling })
+  // On affiche le numéro de la vente dans la pharmacie ; l'identifiant de l'URL reste technique.
+  const number = sale.data?.number
+  usePageTitle(number ? `Vente n° ${number}` : 'Vente')
   const recordPayment = useRecordPayment()
   const deleteSale = useDeleteSale()
   const [paying, setPaying] = useState(false)
@@ -77,7 +80,7 @@ export default function SaleDetailPage() {
   if (sale.isError && !sale.data) {
     return (
       <>
-        <PageHeader title={`Vente n° ${saleId}`} actions={backButton} />
+        <PageHeader title="Vente" actions={backButton} />
         <Alert
           tone="danger"
           title="Chargement impossible"
@@ -101,7 +104,7 @@ export default function SaleDetailPage() {
     try {
       await deleteSale.mutateAsync(saleId)
       navigate('/ventes', { replace: true })
-      toast.success(`Vente n° ${saleId} annulée : le stock a été remis à jour.`)
+      toast.success(`Vente n° ${number} annulée : le stock a été remis à jour.`)
     } catch (error) {
       setCancelling(false)
       setConfirmingCancel(false)
@@ -112,17 +115,17 @@ export default function SaleDetailPage() {
   return (
     <>
       <PageHeader
-        title={`Vente n° ${data.id}`}
+        title={`Vente n° ${data.number}`}
         subtitle={`Enregistrée le ${formatDateTime(data.sold_at)}`}
         actions={
           <>
             {backButton}
-            {isAdmin ? (
+            {isAdmin && canWrite ? (
               <Button variant="danger" icon={Trash2} onClick={() => setConfirmingCancel(true)}>
                 Annuler la vente
               </Button>
             ) : null}
-            {balance > 0 ? (
+            {balance > 0 && canSell ? (
               <Button icon={Banknote} onClick={() => setPaying(true)}>
                 Encaisser
               </Button>
@@ -203,7 +206,7 @@ export default function SaleDetailPage() {
 
       <ConfirmDialog
         open={confirmingCancel}
-        title={`Annuler la vente n° ${data.id} ?`}
+        title={`Annuler la vente n° ${data.number} ?`}
         message={
           <>
             La vente de <strong>{formatMoney(data.grand_total)}</strong> sera supprimée définitivement et les quantités vendues

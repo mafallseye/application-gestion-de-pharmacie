@@ -164,7 +164,7 @@ function RecentSales({ query }) {
             <span className={styles.saleMain}>
               <span className={styles.saleCustomer}>{customerLabel(sale)}</span>
               <span className={styles.saleMeta}>
-                N° {sale.id}, {formatDateTime(sale.sold_at)}
+                N° {sale.number}, {formatDateTime(sale.sold_at)}
               </span>
             </span>
             <span className={styles.saleAmount}>

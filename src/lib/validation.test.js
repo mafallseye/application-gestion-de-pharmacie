@@ -7,6 +7,9 @@ import {
   validateMedicine,
   validatePassword,
   validatePasswordChange,
+  validatePharmacy,
+  validatePharmacyRegistration,
+  validateSignup,
   validatePayment,
   validateSupplier,
   validateUser,
@@ -183,5 +186,44 @@ describe('validatePasswordChange', () => {
       password: 'Le mot de passe doit contenir entre 8 et 72 caractères.',
     })
     expect(validatePasswordChange({}).errors.password).toBe('Le mot de passe est obligatoire.')
+  })
+})
+
+describe('validateSignup', () => {
+  const valid = { full_name: ' Awa Ndiaye ', email: ' Awa@Exemple.SN ', password: 'motdepasse', confirmation: 'motdepasse' }
+  it('normalise une inscription valide (sans la confirmation)', () => {
+    expect(validateSignup(valid)).toEqual({
+      values: { full_name: 'Awa Ndiaye', email: 'awa@exemple.sn', password: 'motdepasse' },
+      errors: {},
+    })
+  })
+  it('signale nom, e-mail, mot de passe et confirmation', () => {
+    expect(Object.keys(validateSignup({}).errors).sort()).toEqual(['email', 'full_name', 'password'])
+    expect(validateSignup({ ...valid, confirmation: 'autre' }).errors).toEqual({
+      confirmation: 'Les deux mots de passe ne sont pas identiques.',
+    })
+  })
+})
+
+describe('validatePharmacy / validatePharmacyRegistration', () => {
+  it('normalise la fiche', () => {
+    expect(validatePharmacy({ name: ' Pharmacie du Plateau ', phone: ' 33 821 00 00 ' })).toEqual({
+      values: { name: 'Pharmacie du Plateau', phone: '33 821 00 00', address: '' },
+      errors: {},
+    })
+  })
+  it('contrôle les longueurs du schéma', () => {
+    const { errors } = validatePharmacy({ name: '', phone: '1'.repeat(41), address: 'a'.repeat(256) })
+    expect(Object.keys(errors).sort()).toEqual(['address', 'name', 'phone'])
+    expect(errors.name).toBe('Le nom de la pharmacie est obligatoire.')
+  })
+  it('la création exige aussi le nom complet', () => {
+    expect(validatePharmacyRegistration({ name: 'A' }).errors).toEqual({ full_name: 'Votre nom complet est obligatoire.' })
+    expect(validatePharmacyRegistration({ name: 'A', full_name: ' Awa ' }).values).toEqual({
+      name: 'A',
+      phone: '',
+      address: '',
+      full_name: 'Awa',
+    })
   })
 })

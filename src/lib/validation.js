@@ -178,6 +178,38 @@ export function validatePasswordChange(input = {}) {
   return { values, errors }
 }
 
+/** Inscription d'un nouvel administrateur : nom, e-mail, mot de passe + confirmation. */
+export function validateSignup(input = {}) {
+  const errors = {}
+  const values = {
+    full_name: requiredText(errors, 'full_name', input.full_name, 120, 'Le nom complet'),
+    email: email(errors, input.email),
+    password: password(errors, input.password),
+  }
+  if (!errors.password && String(input.confirmation ?? '') !== values.password) {
+    errors.confirmation = 'Les deux mots de passe ne sont pas identiques.'
+  }
+  return { values, errors }
+}
+
+/** Fiche d'une pharmacie (nom, téléphone, adresse). */
+export function validatePharmacy(input = {}) {
+  const errors = {}
+  const values = {
+    name: requiredText(errors, 'name', input.name, 160, 'Le nom de la pharmacie'),
+    phone: optionalText(errors, 'phone', input.phone, 40, 'Le téléphone'),
+    address: optionalText(errors, 'address', input.address, 255, "L'adresse"),
+  }
+  return { values, errors }
+}
+
+/** Création de la pharmacie par son futur administrateur : fiche + son nom complet. */
+export function validatePharmacyRegistration(input = {}) {
+  const { values, errors } = validatePharmacy(input)
+  values.full_name = requiredText(errors, 'full_name', input.full_name, 120, 'Votre nom complet')
+  return { values, errors }
+}
+
 /** Formulaire de connexion (aucune règle de longueur : on ne décrit pas les mots de passe valides). */
 export function validateLogin(input = {}) {
   const errors = {}

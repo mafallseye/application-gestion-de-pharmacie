@@ -24,7 +24,7 @@ const LABELS = {
 const fields = (form) => <ContactFields prefix="client" namePlaceholder="ex. Moussa Diop" {...form} />
 
 export default function CustomersPage() {
-  const { isStaff, isManager } = useAuth()
+  const { canSell, canManage } = useAuth()
   return (
     <EntityPage
       title="Clients"
@@ -39,9 +39,9 @@ export default function CustomersPage() {
       validate={validateCustomer}
       emptyValues={EMPTY_CONTACT}
       fields={fields}
-      canCreate={isStaff}
-      canEdit={isStaff}
-      canDelete={isManager}
+      canCreate={canSell}
+      canEdit={canSell}
+      canDelete={canManage}
     />
   )
 }

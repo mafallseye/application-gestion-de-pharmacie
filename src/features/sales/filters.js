@@ -25,9 +25,9 @@ export function filterSales(sales, filters = {}) {
   const { search = '', unpaidOnly = false, from = '', to = '' } = filters
   return (sales ?? []).filter((sale) => {
     const day = String(sale.sold_at).slice(0, 10)
-    const row = { id: sale.id, customer_name: sale.customer_name, seller_name: sale.seller?.full_name }
+    const row = { number: sale.number, customer_name: sale.customer_name, seller_name: sale.seller?.full_name }
     return (
-      matchesSearch(row, search, ['id', 'customer_name', 'seller_name']) &&
+      matchesSearch(row, search, ['number', 'customer_name', 'seller_name']) &&
       (!unpaidOnly || saleBalance(sale) > 0) &&
       (!from || day >= from) &&
       (!to || day <= to)

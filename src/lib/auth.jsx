@@ -1,13 +1,30 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { toAppError, unwrap } from './errors.js'
+import { AppError, toAppError, unwrap } from './errors.js'
 import { queryKeys } from './queryKeys.js'
+import { subscriptionState } from './subscription.js'
 import { supabase } from './supabase.js'
 
 const AuthContext = createContext(null)
 
+// Le profil est lu avec sa pharmacie (`pharmacy`, null tant que le compte
+// n'est rattaché à aucune pharmacie ou n'est pas actif).
 async function fetchProfile(userId) {
-  return unwrap(await supabase.from('profiles').select('*').eq('id', userId).maybeSingle())
+  return unwrap(await supabase.from('profiles').select('*, pharmacy:pharmacies(*)').eq('id', userId).maybeSingle())
+}
+
+const EMAIL_TAKEN = 'Cette adresse e-mail est déjà utilisée. Connectez-vous, ou choisissez une autre adresse.'
+
+/**
+ * Crée un compte. Renvoie { needsConfirmation } : vrai si le projet exige de
+ * confirmer l'adresse e-mail avant la première connexion.
+ */
+async function signUp({ email, password, full_name }) {
+  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name } } })
+  if (error) throw toAppError(error)
+  // Adresse déjà inscrite : Supabase répond « succès » avec un utilisateur sans identité.
+  if (data.user && data.user.identities?.length === 0) throw new AppError(EMAIL_TAKEN)
+  return { needsConfirmation: !data.session }
 }
 
 async function signIn(email, password) {
@@ -62,7 +79,13 @@ export function AuthProvider({ children }) {
   const profile = user ? (profileQuery.data ?? null) : null
 
   const value = useMemo(() => {
-    const active = profile?.active === true
+    // Membre du personnel : compte activé ET rattaché à une pharmacie.
+    const active = profile?.active === true && profile.pharmacy_id != null
+    const pharmacy = profile?.pharmacy ?? null
+    // L'abonnement est évalué à l'heure du dernier chargement du profil (rechargé
+    // toutes les minutes) : le calcul reste ainsi stable entre deux rendus.
+    const subscription = subscriptionState(pharmacy, new Date(profileQuery.dataUpdatedAt))
+    const canWrite = active && subscription.canWrite
     return {
       session: session ?? null,
       user,
@@ -75,11 +98,23 @@ export function AuthProvider({ children }) {
       isStaff: active,
       isManager: active && (profile.role === 'admin' || profile.role === 'pharmacien'),
       isAdmin: active && profile.role === 'admin',
+      // Compte connecté qui n'a pas encore créé (ou rejoint) de pharmacie.
+      needsPharmacy: user !== null && profileQuery.isSuccess && profile !== null && profile.pharmacy_id == null,
+      pharmacy,
+      // { status: 'trial'|'active'|'expired', endsAt, daysLeft, canWrite, endingSoon }
+      subscription,
+      // Sans essai ni abonnement en cours, la pharmacie est en lecture seule :
+      // ces droits reprennent ceux du rôle, limités par l'abonnement.
+      canWrite,
+      canSell: canWrite,
+      canManage: canWrite && (profile.role === 'admin' || profile.role === 'pharmacien'),
+      refreshProfile: () => queryClient.invalidateQueries({ queryKey: queryKeys.profile(user?.id) }),
+      signUp,
       signIn,
       signOut,
       changePassword,
     }
-  }, [session, user, profile, profileQuery.isPending, profileQuery.isSuccess, profileQuery.error])
+  }, [session, user, profile, queryClient, profileQuery.isPending, profileQuery.isSuccess, profileQuery.error, profileQuery.dataUpdatedAt])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

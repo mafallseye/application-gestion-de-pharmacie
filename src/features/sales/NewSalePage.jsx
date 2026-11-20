@@ -16,6 +16,7 @@ import {
   Select,
   useToast,
 } from '../../components/ui'
+import { useAuth } from '../../lib/auth.jsx'
 import { errorMessage } from '../../lib/errors.js'
 import { formatMoney, formatNumber } from '../../lib/format.js'
 import { validatePayment } from '../../lib/validation.js'
@@ -70,6 +71,7 @@ function QuantityInput({ line, onChange }) {
 export default function NewSalePage() {
   usePageTitle('Nouvelle vente')
   const toast = useToast()
+  const { canSell } = useAuth()
   const medicines = useMedicines({ refetchInterval: CATALOGUE_REFRESH_MS })
   const customers = useCustomers()
   const createSale = useCreateSale()
@@ -111,26 +113,26 @@ export default function NewSalePage() {
 
   const submit = async (event) => {
     event.preventDefault()
-    if (cart.length === 0 || paymentError || createSale.isPending) return
+    if (!canSell || cart.length === 0 || paymentError || createSale.isPending) return
     if (due > 0 && !customerId) {
       setCustomerError('Choisissez un client : une vente à crédit doit être rattachée à un client.')
       return
     }
     setServerError(null)
     try {
-      const saleId = await createSale.mutateAsync({
+      const sale = await createSale.mutateAsync({
         customerId: customerId ? Number(customerId) : null,
         // On n'enregistre jamais plus que le total : le surplus est la monnaie rendue.
         paidAmount: Math.min(given, total),
         items: toSaleItems(cart),
         expectedTotal: total,
       })
-      setLastSale({ id: saleId, change: Math.max(0, given - total) })
+      setLastSale({ ...sale, change: Math.max(0, given - total) })
       setSavedCart([])
       setCustomerId('')
       setPaidInput(null)
       setSearch('')
-      toast.success(`Vente n° ${saleId} enregistrée.`)
+      toast.success(`Vente n° ${sale.number} enregistrée.`)
     } catch (error) {
       // Stock insuffisant, prix modifié… : useCreateSale recharge le catalogue
       // et le panier affiché se resynchronise (quantités et prix).
@@ -144,12 +146,18 @@ export default function NewSalePage() {
     <>
       <PageHeader title="Nouvelle vente" subtitle="Ajoutez les médicaments au panier, puis encaissez." />
 
+      {!canSell ? (
+        <Alert tone="warning" title="La caisse est désactivée" className={shared.pageAlert}>
+          Aucune vente ne peut être enregistrée tant que l’abonnement de la pharmacie n’est pas renouvelé.
+        </Alert>
+      ) : null}
+
       {medicines.isError ? <LoadError query={medicines} /> : null}
 
       {lastSale ? (
         <Alert
           tone="success"
-          title={`Vente n° ${lastSale.id} enregistrée`}
+          title={`Vente n° ${lastSale.number} enregistrée`}
           className={shared.pageAlert}
           action={
             <Button as={Link} to={`/ventes/${lastSale.id}`} variant="secondary" size="sm">
@@ -189,7 +197,7 @@ export default function NewSalePage() {
                     variant="secondary"
                     size="sm"
                     icon={Plus}
-                    disabled={quantityInCart(medicine.id) >= medicine.quantity}
+                    disabled={!canSell || quantityInCart(medicine.id) >= medicine.quantity}
                     aria-label={`Ajouter ${medicine.brand_name} au panier`}
                     onClick={() => updateCart(addToCart(cart, medicine))}
                   >
@@ -304,10 +312,10 @@ export default function NewSalePage() {
               </Field>
               {serverError ? (
                 <Alert tone="danger" title="Vente non enregistrée">
-                  {serverError} Les prix et le stock ont été actualisés : vérifiez le panier avant de réessayer.
+                  {serverError}
                 </Alert>
               ) : null}
-              <Button type="submit" fullWidth icon={Receipt} disabled={cart.length === 0} loading={createSale.isPending}>
+              <Button type="submit" fullWidth icon={Receipt} disabled={!canSell || cart.length === 0} loading={createSale.isPending}>
                 Enregistrer la vente
               </Button>
             </div>

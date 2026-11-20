@@ -38,10 +38,11 @@ export async function getSale(id) {
  * Enregistre une vente (contrôle du stock et calcul du total faits en base).
  * items : [{ medicine_id, quantity }] — voir toSaleItems(cart).
  * expectedTotal : total affiché à la caisse ; la base refuse la vente si les
- * prix ont changé entre-temps. Renvoie l'id de la vente.
+ * prix ont changé entre-temps. Renvoie { id, number } : l'identifiant technique
+ * de la vente et son numéro dans la pharmacie (celui qu'on affiche).
  */
 export async function createSale({ customerId = null, paidAmount, items, expectedTotal }) {
-  return unwrap(
+  const id = unwrap(
     await supabase.rpc('create_sale', {
       p_customer_id: customerId,
       p_paid_amount: paidAmount,
@@ -49,6 +50,8 @@ export async function createSale({ customerId = null, paidAmount, items, expecte
       p_expected_total: expectedTotal,
     }),
   )
+  const sale = unwrap(await supabase.from('sales').select('number').eq('id', id).maybeSingle())
+  return { id, number: sale?.number ?? null }
 }
 
 /**

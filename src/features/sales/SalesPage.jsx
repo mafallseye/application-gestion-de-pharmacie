@@ -14,7 +14,7 @@ const LIMIT = 500
 const money = (value) => <span className={shared.nowrap}>{formatMoney(value)}</span>
 
 const COLUMNS = [
-  { key: 'id', header: 'N°', width: '5rem', render: (sale) => <strong>{sale.id}</strong> },
+  { key: 'number', header: 'N°', width: '5rem', render: (sale) => <strong>{sale.number}</strong> },
   { key: 'sold_at', header: 'Date', render: (sale) => <span className={shared.nowrap}>{formatDateTime(sale.sold_at)}</span> },
   { key: 'customer', header: 'Client', render: customerLabel },
   { key: 'grand_total', header: 'Total', align: 'right', render: (sale) => money(sale.grand_total) },

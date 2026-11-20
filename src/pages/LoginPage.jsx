@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { AuthLayout } from '../components/layout/AuthLayout.jsx'
 import { Alert, Button, Field, Input, PageLoader } from '../components/ui'
 import { usePageTitle } from '../features/shared/usePageTitle.js'
@@ -47,7 +47,12 @@ export default function LoginPage() {
     <AuthLayout
       title="Connexion"
       subtitle="Entrez vos identifiants pour ouvrir votre session."
-      footer="Pas encore de compte ? Demandez à l’administrateur de la pharmacie de vous en créer un."
+      footer={
+        <>
+          Nouvelle pharmacie ? <Link to="/inscription">Créer un compte</Link>. Si vous rejoignez une pharmacie déjà inscrite,
+          demandez à son administrateur de vous créer un compte.
+        </>
+      }
     >
       <form className={styles.form} onSubmit={submit} noValidate>
         {serverError ? <Alert tone="danger">{serverError}</Alert> : null}

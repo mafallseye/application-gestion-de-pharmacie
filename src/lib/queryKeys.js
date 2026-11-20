@@ -10,6 +10,9 @@ export const queryKeys = {
   salesList: (filters = {}) => ['sales', 'list', filters],
   sale: (id) => ['sales', 'detail', Number(id)],
   dashboard: ['dashboard'],
+  plans: ['plans'],
+  subscriptionPayments: ['subscription-payments'],
+  paymentCheck: (token) => ['payment-check', token],
 }
 
 // Invalide plusieurs familles de requêtes après une mutation.
