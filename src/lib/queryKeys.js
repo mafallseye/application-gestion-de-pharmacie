@@ -11,6 +11,7 @@ export const queryKeys = {
   sale: (id) => ['sales', 'detail', Number(id)],
   dashboard: ['dashboard'],
   plans: ['plans'],
+  mobileSettings: ['mobile-settings'],
   subscriptionPayments: ['subscription-payments'],
   paymentCheck: (token) => ['payment-check', token],
 }

@@ -5,7 +5,7 @@ import { invalidate, queryKeys } from '../../lib/queryKeys.js'
 import { supabase } from '../../lib/supabase.js'
 
 const WITH_SELLER = '*, seller:profiles(id,full_name,email)'
-const WITH_DETAILS = `${WITH_SELLER}, items:sale_items(*), payments(id,amount,created_at,author:profiles(id,full_name,email))`
+const WITH_DETAILS = `${WITH_SELLER}, items:sale_items(*), payments(id,amount,method,created_at,author:profiles(id,full_name,email)), mobile_payments:sale_mobile_payments(id,amount,status,order_id,checkout_url,created_at)`
 /**
  * Ventes les plus récentes d'abord, avec `seller` ({ id, full_name, email } ou null).
  * `from` / `to` (AAAA-MM-JJ inclus) limitent la période côté serveur ;
@@ -21,8 +21,9 @@ export async function listSales({ from, to, unpaidOnly = false, limit = 500 } = 
 }
 
 /**
- * Une vente avec son vendeur, ses articles (`items`, dans l'ordre de saisie) et
- * l'historique de ses paiements (`payments`, du plus ancien au plus récent).
+ * Une vente avec son vendeur, ses articles (`items`, dans l'ordre de saisie),
+ * l'historique de ses paiements (`payments`, du plus ancien au plus récent) et
+ * ses demandes de paiement mobile (`mobile_payments`).
  */
 export async function getSale(id) {
   const sale = unwrap(
@@ -40,18 +41,26 @@ export async function getSale(id) {
  * expectedTotal : total affiché à la caisse ; la base refuse la vente si les
  * prix ont changé entre-temps. Renvoie { id, number } : l'identifiant technique
  * de la vente et son numéro dans la pharmacie (celui qu'on affiche).
+ * mobile : vente payée par mobile money — elle est créée impayée (paidAmount 0),
+ * « en attente de paiement mobile », puis soldée ou annulée par le serveur.
  */
-export async function createSale({ customerId = null, paidAmount, items, expectedTotal }) {
+export async function createSale({ customerId = null, paidAmount, items, expectedTotal, mobile = false }) {
   const id = unwrap(
     await supabase.rpc('create_sale', {
       p_customer_id: customerId,
       p_paid_amount: paidAmount,
       p_items: items,
       p_expected_total: expectedTotal,
+      p_mobile: mobile,
     }),
   )
   const sale = unwrap(await supabase.from('sales').select('number').eq('id', id).maybeSingle())
   return { id, number: sale?.number ?? null }
+}
+
+/** Vrai si la vente existe encore (une vente « mobile » refusée par le prestataire est supprimée par le serveur). */
+export async function saleExists(id) {
+  return unwrap(await supabase.from('sales').select('id').eq('id', id).maybeSingle()) !== null
 }
 
 /**
