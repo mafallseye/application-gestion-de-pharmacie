@@ -25,11 +25,11 @@ function initials(name = '') {
  *  - navItems : [{ to, label, icon (composant lucide), end? }]
  *  - onSignOut() : clic sur « Se déconnecter »
  *  - children : contenu de la page
- *  - brand? (nom affiché, défaut « Pharmacie »), brandHint? (ligne sous le nom, ex. le nom de l'officine)
+ *  - brand? (nom affiché, défaut « PharmaCaisse »), brandHint? (ligne sous le nom, ex. le nom de l'officine)
  *  - sidebarFooter? : nœud affiché dans la barre latérale, entre le menu et le compte (ex. bloc d'aide)
  * La bascule clair/sombre est mémorisée dans localStorage.
  */
-export function AppShell({ user, navItems = [], onSignOut, children, brand = 'Pharmacie', brandHint, sidebarFooter }) {
+export function AppShell({ user, navItems = [], onSignOut, children, brand = 'PharmaCaisse', brandHint, sidebarFooter }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const { theme, toggleTheme } = useTheme()
   const sidebarId = useId()

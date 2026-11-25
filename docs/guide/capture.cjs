@@ -70,6 +70,12 @@ async function main() {
     await signIn(page, NEWCOMER, PASSWORD)
     await page.getByRole('heading', { level: 1 }).waitFor()
     await settle(page)
+    // Exemple de saisie pour la capture ; le formulaire n'est pas envoyé.
+    await page.getByLabel('Nom de la pharmacie').fill('Pharmacie du Plateau')
+    await page.getByLabel('Téléphone').fill('33 821 45 67')
+    await page.getByLabel('Adresse').fill('12, avenue Georges Pompidou, Dakar')
+    await page.getByLabel('Votre nom complet').fill('Dr Aminata Sow')
+    await page.getByLabel('Votre nom complet').blur()
     await page.screenshot(jpg('creer-pharmacie'))
     await ctx.close()
   }
@@ -87,7 +93,7 @@ async function main() {
   }
   if (want('medicaments')) {
     await go(page, '/medicaments')
-    await shotMain(page, 'medicaments', 720)
+    await shotMain(page, 'medicaments', 790)
     await page.getByRole('button', { name: 'Ajouter un médicament' }).click()
     await settle(page, 400)
     await page.locator('dialog[open]').screenshot(jpg('medicament-ajout'))
@@ -119,7 +125,7 @@ async function main() {
     await shotMain(page, 'ventes', 700)
     await page.getByRole('row', { name: /Ibrahima Fall/ }).first().click()
     await settle(page)
-    await shotMain(page, 'vente-detail')
+    await shotMain(page, 'vente-detail', 665)
     await page.getByRole('button', { name: /^Encaisser/ }).first().click()
     await settle(page, 400)
     await page.locator('dialog[open]').screenshot(jpg('vente-encaisser'))
@@ -141,8 +147,6 @@ async function main() {
     await settle(page, 400)
     await page.locator('dialog[open]').screenshot(jpg('utilisateur-ajout'))
     await page.keyboard.press('Escape')
-    await go(page, '/compte')
-    await shotMain(page, 'mon-compte', 540)
   }
   if (want('abonnement')) {
     await go(page, '/abonnement')
@@ -160,15 +164,12 @@ async function main() {
 
   // ——— Téléphone ———
   if (want('mobile')) {
-    const phone = await newContext(browser, { width: 390, height: 780, scale: SCALE, mobile: true })
+    const phone = await newContext(browser, { width: 390, height: 844, scale: SCALE, mobile: true })
     await phone.addInitScript(maskScript)
     const mobile = await phone.newPage()
     await signIn(mobile, ADMIN, PASSWORD)
     await go(mobile, '/')
     await mobile.screenshot(jpg('mobile-tableau-de-bord'))
-    await mobile.getByRole('button', { name: 'Ouvrir le menu' }).click()
-    await settle(mobile, 500)
-    await mobile.screenshot(jpg('mobile-menu'))
     await go(mobile, '/caisse')
     await mobile.locator('li').filter({ hasText: 'Doliprane 1000 mg' }).getByRole('button', { name: /Ajouter/ }).first().click()
     await settle(mobile, 300)

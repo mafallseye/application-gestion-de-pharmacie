@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PharmaCaisse — Guide d’utilisation</title>
+    <meta name="author" content="PharmaCaisse" />
+    <meta name="description" content="Guide d’utilisation de PharmaCaisse : stock, caisse, ventes, clients, équipe et abonnement." />
+    <link rel="stylesheet" href="guide.css" />
+  </head>
+  <body>
+    <!-- Emblème (public/favicon.svg), réutilisé par <use>. -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="logo" viewBox="0 0 32 32">
+        <rect width="32" height="32" rx="9" fill="#0e6b58" />
+        <rect x="12.5" y="6" width="7" height="20" rx="3.5" fill="#fff" />
+        <rect x="6" y="12.5" width="20" height="7" rx="3.5" fill="#fff" />
+        <circle cx="16" cy="16" r="2.2" fill="#f0b14a" />
+      </symbol>
+    </svg>
+
+    <!-- 1 · Couverture -->
+    <section class="page cover">
+      <div class="brand">
+        <svg aria-hidden="true"><use href="#logo" /></svg>
+        <span>PharmaCaisse</span>
+      </div>
+      <h1>Guide<br />d’utilisation</h1>
+      <p class="promise">Le stock, les ventes et la caisse de votre pharmacie, au même comptoir. Sur ordinateur, tablette ou téléphone.</p>
+      <p class="offer"><b>1 mois d’essai gratuit</b><span>Sans engagement.</span></p>
+      <p class="where">Pour commencer : <b>pharmacaisse.vercel.app</b></p>
+      <div class="preview"><img src="captures/tableau-de-bord.jpg" alt="Aperçu du tableau de bord de PharmaCaisse." /></div>
+    </section>
+
+    <!-- 2 · Sommaire -->
+    <section class="page" data-title="Sommaire">
+      <div class="chapter">
+        <div>
+          <h1>Sommaire</h1>
+          <p class="lead">Chaque chapitre tient sur une ou deux pages. Lisez le premier, puis allez à celui dont vous avez besoin.</p>
+        </div>
+      </div>
+      <ol class="toc">
+        <li><span class="k">1</span><a href="#demarrer"><span class="t">Démarrer en 5 minutes</span><span class="d">Créer son compte, créer sa pharmacie, profiter du mois d’essai.</span></a><span class="p" data-page="demarrer"></span></li>
+        <li><span class="k">2</span><a href="#tableau-de-bord"><span class="t">Le tableau de bord</span><span class="d">Ventes, stock bas, périmés, impayés : l’essentiel en un coup d’œil.</span></a><span class="p" data-page="tableau-de-bord"></span></li>
+        <li><span class="k">3</span><a href="#medicaments"><span class="t">Les médicaments</span><span class="d">Ajouter, modifier, repérer les périmés et le stock bas. Catégories et fournisseurs.</span></a><span class="p" data-page="medicaments"></span></li>
+        <li><span class="k">4</span><a href="#caisse"><span class="t">Vendre à la caisse</span><span class="d">Chercher, remplir le panier, encaisser, rendre la monnaie.</span></a><span class="p" data-page="caisse"></span></li>
+        <li><span class="k">5</span><a href="#credit"><span class="t">Vente à crédit et encaissement</span><span class="d">Laisser un reste à payer, puis l’encaisser plus tard.</span></a><span class="p" data-page="credit"></span></li>
+        <li><span class="k">6</span><a href="#ventes"><span class="t">Les ventes</span><span class="d">Retrouver une vente, filtrer, annuler une vente.</span></a><span class="p" data-page="ventes"></span></li>
+        <li><span class="k">7</span><a href="#clients"><span class="t">Les clients, et l’application sur téléphone</span><span class="d">Tenir la liste des clients. Travailler depuis un téléphone.</span></a><span class="p" data-page="clients"></span></li>
+        <li><span class="k">8</span><a href="#equipe"><span class="t">Votre équipe</span><span class="d">Créer les comptes, choisir les rôles, changer son mot de passe.</span></a><span class="p" data-page="equipe"></span></li>
+        <li><span class="k">9</span><a href="#abonnement"><span class="t">L’abonnement</span><span class="d">Essai, offres, paiement par Wave ou Orange Money, fin d’abonnement.</span></a><span class="p" data-page="abonnement"></span></li>
+        <li><span class="k">10</span><a href="#mobile-money"><span class="t">Faire payer vos clients par mobile money</span><span class="d">Une option : le client scanne un QR code à la caisse.</span></a><span class="p" data-page="mobile-money"></span></li>
+        <li><span class="k">11</span><a href="#aide"><span class="t">Questions fréquentes et assistance</span><span class="d">Les réponses rapides, et le numéro à appeler.</span></a><span class="p" data-page="aide"></span></li>
+      </ol>
+      <div class="cols gap-l" style="grid-template-columns: 1fr 1fr">
+        <div class="note green">
+          <h3>Ce qu’il vous faut</h3>
+          <p>Un ordinateur, une tablette ou un téléphone connecté à internet, et une adresse e-mail. Il n’y a rien à installer : PharmaCaisse s’ouvre dans votre navigateur.</p>
+        </div>
+        <div class="note">
+          <h3>À propos des captures d’écran</h3>
+          <p>Les écrans de ce guide montrent une pharmacie d’exemple, « Pharmacie du Plateau ». Les médicaments, clients et montants sont fictifs.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · Démarrer -->
+    <section class="page" id="demarrer" data-title="Démarrer en 5 minutes">
+      <div class="chapter">
+        <span class="no">1</span>
+        <div>
+          <h1>Démarrer en 5 minutes</h1>
+          <p class="lead">Deux écrans à remplir, et votre pharmacie est prête. L’essai gratuit dure 1 mois (30 jours).</p>
+        </div>
+      </div>
+
+      <div class="cols" style="grid-template-columns: 1fr 1fr">
+        <div>
+          <h2>Créez votre compte</h2>
+          <figure class="shot">
+            <div class="frame"><img class="crop right" style="height: 94mm" src="captures/inscription.jpg" alt="Écran « Créer un compte » : nom complet, adresse e-mail, mot de passe." /></div>
+          </figure>
+          <ol class="steps gap-m">
+            <li><div>Ouvrez <strong>pharmacaisse.vercel.app</strong> et cliquez sur <span class="ui">Créer un compte</span>.</div></li>
+            <li><div>Saisissez votre nom, votre adresse e-mail et un mot de passe d’au moins 8 caractères.</div></li>
+            <li><div>Cliquez sur <span class="ui">Créer mon compte</span>.</div></li>
+          </ol>
+          <p class="gap-s" style="color: var(--ink-muted); font-size: 9pt">Si un message vous le demande, ouvrez l’e-mail reçu et cliquez sur le lien de confirmation, puis connectez-vous.</p>
+        </div>
+        <div>
+          <h2>Créez votre pharmacie</h2>
+          <figure class="shot">
+            <div class="frame"><img class="crop right" style="height: 94mm" src="captures/creer-pharmacie.jpg" alt="Écran « Créez votre pharmacie » : nom de la pharmacie, téléphone, adresse, nom complet." /></div>
+          </figure>
+          <ol class="steps gap-m">
+            <li><div>Donnez le nom de la pharmacie. Le téléphone et l’adresse sont facultatifs.</div></li>
+            <li><div>Vérifiez votre nom complet.</div></li>
+            <li><div>Cliquez sur <span class="ui">Créer ma pharmacie</span>.</div></li>
+          </ol>
+          <p class="gap-s" style="color: var(--ink-muted); font-size: 9pt">Vous devenez l’administrateur de la pharmacie, et vous arrivez sur le tableau de bord.</p>
+        </div>
+      </div>
+
+      <div class="cols gap-l" style="grid-template-columns: 1fr 1fr">
+        <div class="note">
+          <h3>1 mois d’essai gratuit</h3>
+          <p>L’essai commence dès que la pharmacie est créée. Pendant 30 jours, tout est ouvert, sans rien payer.</p>
+        </div>
+        <div class="note green">
+          <h3>Et ensuite ?</h3>
+          <p>Ajoutez vos médicaments (chapitre 3), créez les comptes de votre équipe (chapitre 8), puis faites votre première vente (chapitre 4).</p>
+        </div>
+      </div>
+      <p class="gap-m" style="color: var(--ink-muted); font-size: 9pt">Vos collègues n’ont pas à s’inscrire : c’est vous qui créez leurs comptes.</p>
+    </section>
+
+    <!-- 4 · Tableau de bord -->
+    <section class="page" id="tableau-de-bord" data-title="Le tableau de bord">
+      <div class="chapter">
+        <span class="no">2</span>
+        <div>
+          <h1>Le tableau de bord</h1>
+          <p class="lead">C’est l’écran d’accueil. Il résume l’activité de la pharmacie et signale ce qui demande votre attention.</p>
+        </div>
+      </div>
+
+      <figure class="shot">
+        <div class="frame">
+          <img src="captures/tableau-de-bord.jpg" alt="Tableau de bord : alertes, indicateurs, ventes des 7 derniers jours et dernières ventes." />
+          <span class="pin" style="left: 23.2%; top: 14.6%">1</span>
+          <span class="pin" style="left: 23.2%; top: 32%">2</span>
+          <span class="pin" style="left: 73.2%; top: 32%">3</span>
+          <span class="pin" style="left: 23.2%; top: 46.2%">4</span>
+          <span class="pin" style="left: 73.2%; top: 46.2%">5</span>
+          <span class="pin" style="left: 23.2%; top: 60.4%">6</span>
+          <span class="pin" style="left: 68%; top: 60.4%">7</span>
+          <span class="pin" style="left: 18.6%; top: 58.2%">8</span>
+        </div>
+      </figure>
+
+      <ul class="keys two gap-m">
+        <li><span class="n">1</span><div><strong>Alertes.</strong> Médicaments périmés (rouge) et en stock bas (jaune). <span class="ui">Voir la liste</span> ouvre les médicaments concernés.</div></li>
+        <li><span class="n">5</span><div><strong>Impayés.</strong> Le total des restes à payer des ventes à crédit. Le lien ouvre les ventes à encaisser.</div></li>
+        <li><span class="n">2</span><div><strong>Ventes du jour et du mois.</strong> Le montant des ventes enregistrées.</div></li>
+        <li><span class="n">6</span><div><strong>Ventes des 7 derniers jours.</strong> Une barre par jour, aujourd’hui en vert foncé.</div></li>
+        <li><span class="n">3</span><div><strong>Valeur du stock.</strong> Ce que vaut votre stock, et le nombre de références.</div></li>
+        <li><span class="n">7</span><div><strong>Dernières ventes.</strong> Avec leur statut : payée, ou reste à payer.</div></li>
+        <li><span class="n">4</span><div><strong>Stock bas, périmés ou bientôt périmés.</strong> « Bientôt » veut dire dans les 90 jours.</div></li>
+        <li><span class="n">8</span><div><strong>Le menu.</strong> Toutes les pages, l’aide, et le bouton <span class="ui">Se déconnecter</span>.</div></li>
+      </ul>
+
+      <div class="note gap-m">
+        <p><strong>Le bon réflexe du matin :</strong> ouvrez le tableau de bord, retirez du rayon les médicaments périmés, et commandez ceux qui sont en stock bas.</p>
+      </div>
+    </section>
+
+    <!-- 5 · Médicaments (liste) -->
+    <section class="page" id="medicaments" data-title="Les médicaments">
+      <div class="chapter">
+        <span class="no">3</span>
+        <div>
+          <h1>Les médicaments</h1>
+          <p class="lead">Votre catalogue : prix, stock et dates de péremption. Les pharmaciens et les administrateurs peuvent le modifier.</p>
+        </div>
+      </div>
+
+      <figure class="shot">
+        <div class="frame">
+          <img class="crop" style="height: 128mm" src="captures/medicaments.jpg" alt="Liste des médicaments avec catégorie, fournisseur, prix, stock, péremption et état." />
+          <span class="pin" style="left: 1.7%; top: 20.4%">1</span>
+          <span class="pin" style="left: 50.2%; top: 20.4%">2</span>
+          <span class="pin" style="left: 73.2%; top: 11%">3</span>
+          <span class="pin" style="left: 73.6%; top: 28.7%">4</span>
+          <span class="pin" style="left: 86.4%; top: 37%">5</span>
+        </div>
+      </figure>
+
+      <ul class="keys two gap-m">
+        <li><span class="n">1</span><div><strong>Rechercher</strong> un médicament par son nom.</div></li>
+        <li><span class="n">4</span><div><strong>L’état</strong> de chaque médicament, mis à jour tout seul.</div></li>
+        <li><span class="n">2</span><div><strong>Filtrer</strong> par catégorie ou par état : périmés, expirent bientôt, stock bas, en rupture.</div></li>
+        <li><span class="n">5</span><div><strong>Modifier</strong> (crayon) ou <strong>supprimer</strong> (corbeille) un médicament.</div></li>
+        <li><span class="n">3</span><div><strong>Ajouter</strong> un médicament au catalogue.</div></li>
+      </ul>
+
+      <h2>Ce que disent les étiquettes</h2>
+      <table>
+        <tbody>
+          <tr><td style="width: 34mm"><span class="badge ok">En stock</span></td><td>Tout va bien : le médicament peut être vendu.</td></tr>
+          <tr><td><span class="badge warn">Stock bas</span></td><td>Le stock a atteint le seuil d’alerte du médicament (10 boîtes si vous ne changez rien). Pensez à commander.</td></tr>
+          <tr><td><span class="badge neutral">Rupture</span></td><td>Il n’en reste plus. Le médicament n’apparaît plus à la caisse.</td></tr>
+          <tr><td><span class="badge warn">Expire bientôt</span></td><td>La date de péremption arrive dans les 90 jours. Vendez-le en priorité.</td></tr>
+          <tr><td><span class="badge bad">Périmé</span></td><td>La date est dépassée. Retirez-le du rayon : il ne peut plus être vendu à la caisse.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6 · Médicaments (ajout, catégories, fournisseurs) -->
+    <section class="page" data-title="Les médicaments">
+      <h2>Ajouter ou modifier un médicament</h2>
+      <div class="cols" style="grid-template-columns: 1fr 78mm">
+        <div>
+          <ol class="steps">
+            <li><div>Dans <span class="ui">Médicaments</span>, cliquez sur <span class="ui">Ajouter un médicament</span>.</div></li>
+            <li><div>Saisissez le <strong>nom commercial</strong>, le <strong>prix de vente</strong> et la <strong>quantité en stock</strong> (en nombre de boîtes). Ces trois champs sont obligatoires.</div></li>
+            <li><div>Ajoutez si vous le souhaitez la dénomination commune (DCI), la catégorie, le fournisseur et la <strong>date de péremption</strong>.</div></li>
+            <li><div>Réglez le <strong>seuil d’alerte</strong> : le médicament passe en « Stock bas » dès que le stock atteint ce nombre.</div></li>
+            <li><div>Cliquez sur <span class="ui">Ajouter le médicament</span>.</div></li>
+          </ol>
+          <p class="gap-m">Pour corriger un prix, une date ou une quantité après une livraison, cliquez sur le <strong>crayon</strong> au bout de la ligne, modifiez, puis enregistrez.</p>
+          <div class="note gap-m">
+            <p><strong>Saisissez toujours la date de péremption.</strong> Sans elle, l’application ne peut pas vous prévenir.</p>
+          </div>
+        </div>
+        <figure class="shot">
+          <div class="frame"><img src="captures/medicament-ajout.jpg" alt="Fenêtre « Ajouter un médicament »." /></div>
+          <figcaption>La fenêtre « Ajouter un médicament ».</figcaption>
+        </figure>
+      </div>
+
+      <h2 class="gap-l">Catégories et fournisseurs</h2>
+      <p>Ils servent à ranger le catalogue et à savoir chez qui commander. Créez-les une fois : vous les choisirez ensuite dans la fiche de chaque médicament. Ces deux pages fonctionnent comme celle des médicaments : recherche, bouton d’ajout, crayon et corbeille.</p>
+      <div class="cols gap-m" style="grid-template-columns: 1fr 1fr">
+        <figure class="shot">
+          <div class="frame"><img class="crop" style="height: 44mm" src="captures/categories.jpg" alt="Page Catégories : nom et abréviation de chaque famille de médicaments." /></div>
+          <figcaption>Catégories : les familles de médicaments, avec une abréviation.</figcaption>
+        </figure>
+        <figure class="shot">
+          <div class="frame"><img class="crop" style="height: 44mm" src="captures/fournisseurs.jpg" alt="Page Fournisseurs : nom et coordonnées de chaque fournisseur." /></div>
+          <figcaption>Fournisseurs : leurs noms et leurs coordonnées.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 7 · Caisse -->
+    <section class="page" id="caisse" data-title="Vendre à la caisse">
+      <div class="chapter">
+        <span class="no">4</span>
+        <div>
+          <h1>Vendre à la caisse</h1>
+          <p class="lead">La page « Nouvelle vente ». À gauche les médicaments, à droite le panier. Le stock se met à jour tout seul.</p>
+        </div>
+      </div>
+
+      <figure class="shot">
+        <div class="frame">
+          <img src="captures/caisse.jpg" alt="Page Nouvelle vente : liste des médicaments à gauche, panier avec total et montant payé à droite." />
+          <span class="pin" style="left: 3.2%; top: 27.4%">1</span>
+          <span class="pin" style="left: 57%; top: 35.4%">2</span>
+          <span class="pin" style="left: 82.6%; top: 22.6%">3</span>
+          <span class="pin" style="left: 60.2%; top: 75%">4</span>
+          <span class="pin" style="left: 60.2%; top: 85.6%">5</span>
+        </div>
+      </figure>
+
+      <ol class="steps gap-m">
+        <li><div><strong>Cherchez le médicament.</strong> Tapez le début de son nom. Seuls les médicaments en stock et non périmés sont proposés.</div></li>
+        <li><div><strong>Ajoutez-le au panier</strong> avec le bouton <span class="ui">Ajouter</span>. Recommencez pour chaque médicament.</div></li>
+        <li><div><strong>Réglez la quantité</strong> avec les boutons <strong>−</strong> et <strong>+</strong>. La corbeille retire la ligne. Le total se calcule tout seul.</div></li>
+        <li><div><strong>Saisissez le montant payé</strong>, c’est-à-dire ce que le client vous donne. La <strong>monnaie à rendre</strong> s’affiche juste en dessous. Par défaut, le montant payé est égal au total.</div></li>
+        <li><div><strong>Cliquez sur <span class="ui">Enregistrer la vente</span>.</strong> La vente reçoit un numéro, et le stock diminue.</div></li>
+      </ol>
+
+      <div class="note green gap-m">
+        <p><strong>Client de passage ou client connu ?</strong> Laissez « Client de passage » pour une vente au comptant. Choisissez un client de votre liste si vous voulez garder son nom sur la vente : c’est obligatoire pour une vente à crédit (chapitre suivant).</p>
+      </div>
+    </section>
+
+    <!-- 8 · Crédit -->
+    <section class="page" id="credit" data-title="Vente à crédit et encaissement">
+      <div class="chapter">
+        <span class="no">5</span>
+        <div>
+          <h1>Vente à crédit et encaissement</h1>
+          <p class="lead">Le client paie une partie aujourd’hui, le reste plus tard. PharmaCaisse retient qui doit combien.</p>
+        </div>
+      </div>
+
+      <div class="cols" style="grid-template-columns: 1fr 52mm">
+        <div>
+          <h2>Faire une vente à crédit</h2>
+          <ol class="steps">
+            <li><div>Remplissez le panier comme pour une vente normale.</div></li>
+            <li><div><strong>Choisissez le client</strong> dans la liste. Il doit déjà exister dans <span class="ui">Clients</span> (chapitre 7).</div></li>
+            <li><div>Dans <span class="ui">Montant payé</span>, saisissez ce que le client règle maintenant. Mettez 0 s’il ne paie rien aujourd’hui.</div></li>
+            <li><div>L’écran affiche le <strong>reste dû</strong> et la mention « vente à crédit ». Cliquez sur <span class="ui">Enregistrer la vente</span>.</div></li>
+          </ol>
+          <p class="gap-m">La vente apparaît dans la liste avec l’étiquette <span class="badge warn">Reste 3 100 FCFA</span>, et son reste s’ajoute aux <strong>impayés</strong> du tableau de bord.</p>
+        </div>
+        <figure class="shot">
+          <div class="frame"><img src="captures/caisse-credit.jpg" alt="Panier d’une vente à crédit : client choisi, montant payé inférieur au total, reste dû affiché." /></div>
+          <figcaption>Total 5 100 FCFA, payé 2 000 : reste dû 3 100 FCFA.</figcaption>
+        </figure>
+      </div>
+
+      <h2 class="gap-m">Encaisser un reste à payer</h2>
+      <div class="cols" style="grid-template-columns: 112mm 1fr">
+        <figure class="shot">
+          <div class="frame">
+            <img src="captures/vente-detail.jpg" alt="Détail de la vente n° 8 : client, total, payé, reste à payer, articles et paiements." />
+            <span class="pin" style="left: 91%; top: 4.6%">1</span>
+            <span class="pin" style="left: 17%; top: 33.6%">2</span>
+            <span class="pin" style="left: 15.4%; top: 77.6%">3</span>
+          </div>
+          <figcaption>Le détail d’une vente : ici, 4 000 FCFA restent à payer.</figcaption>
+        </figure>
+        <div>
+          <ol class="steps">
+            <li><div>Ouvrez la vente depuis <span class="ui">Ventes</span>, puis cliquez sur <span class="ui">Encaisser</span> <span class="n">1</span>.</div></li>
+            <li><div>Saisissez le montant reçu. Le reste à payer <span class="n">2</span> est proposé d’office.</div></li>
+            <li><div>Validez avec <span class="ui">Encaisser</span>.</div></li>
+          </ol>
+          <figure class="shot gap-m" style="width: 46mm">
+            <div class="frame"><img src="captures/vente-encaisser.jpg" alt="Fenêtre « Encaisser un paiement » avec le montant encaissé." /></div>
+          </figure>
+        </div>
+      </div>
+
+      <div class="note green gap-m">
+        <h3>L’historique des paiements</h3>
+        <p>Chaque encaissement est gardé dans le tableau <strong>Paiements</strong> <span class="n">3</span> de la vente : la date, le mode, le montant et la personne qui a encaissé. Quand tout est réglé, la vente passe à <span class="badge ok">Payée</span>.</p>
+      </div>
+    </section>
+
+    <!-- 9 · Ventes -->
+    <section class="page" id="ventes" data-title="Les ventes">
+      <div class="chapter">
+        <span class="no">6</span>
+        <div>
+          <h1>Les ventes</h1>
+          <p class="lead">Tout l’historique : chaque vente avec son numéro, son client, son total et ce qui reste à payer.</p>
+        </div>
+      </div>
+
+      <figure class="shot">
+        <div class="frame">
+          <img class="crop" style="height: 116mm" src="captures/ventes.jpg" alt="Page Ventes : recherche, filtres par date, liste des ventes avec total, payé, reste et statut." />
+          <span class="pin" style="left: 1.7%; top: 22.6%">1</span>
+          <span class="pin" style="left: 13.6%; top: 31.1%">2</span>
+          <span class="pin" style="left: 58.2%; top: 26.2%">3</span>
+          <span class="pin" style="left: 95.4%; top: 65%">4</span>
+        </div>
+      </figure>
+
+      <ul class="keys two gap-m">
+        <li><span class="n">1</span><div><strong>Rechercher</strong> par nom de client, nom du vendeur ou numéro de vente.</div></li>
+        <li><span class="n">3</span><div><strong>Impayées seulement</strong> : cochez pour ne voir que les ventes à encaisser.</div></li>
+        <li><span class="n">2</span><div><strong>Du… au…</strong> : choisissez deux dates pour voir les ventes d’une période.</div></li>
+        <li><span class="n">4</span><div><strong>Le statut</strong> : payée, ou le reste à payer. Cliquez sur une ligne pour ouvrir le détail.</div></li>
+      </ul>
+
+      <h2 class="gap-l">Annuler une vente</h2>
+      <div class="cols" style="grid-template-columns: 1fr 62mm">
+        <div>
+          <p>Une erreur de médicament ou de quantité ? Seul un <strong>administrateur</strong> peut annuler une vente.</p>
+          <ol class="steps gap-s">
+            <li><div>Ouvrez la vente, puis cliquez sur le bouton rouge <span class="ui">Annuler la vente</span>.</div></li>
+            <li><div>Lisez le message, puis confirmez avec <span class="ui">Annuler la vente</span>. <span class="ui">Conserver la vente</span> ferme la fenêtre sans rien changer.</div></li>
+          </ol>
+          <p class="gap-s">Les quantités vendues <strong>retournent en stock</strong>. Vous pouvez ensuite refaire la vente correctement à la caisse.</p>
+        </div>
+        <figure class="shot">
+          <div class="frame"><img src="captures/vente-annuler.jpg" alt="Fenêtre de confirmation « Annuler la vente n° 8 ? »." /></div>
+          <figcaption>La confirmation avant d’annuler.</figcaption>
+        </figure>
+      </div>
+      <div class="note gap-m">
+        <p><strong>Attention :</strong> une vente annulée est supprimée définitivement. Cette action ne peut pas être défaite.</p>
+      </div>
+    </section>
+
+    <!-- 10 · Clients + téléphone -->
+    <section class="page" id="clients" data-title="Les clients, et l’application sur téléphone">
+      <div class="chapter">
+        <span class="no">7</span>
+        <div>
+          <h1>Les clients</h1>
+          <p class="lead">La liste des clients de la pharmacie. Elle sert surtout aux ventes à crédit.</p>
+        </div>
+      </div>
+
+      <div class="cols" style="grid-template-columns: 112mm 1fr">
+        <figure class="shot">
+          <div class="frame"><img src="captures/clients.jpg" alt="Page Clients : nom, téléphone, adresse et remarques." /></div>
+          <figcaption>Nom, téléphone, adresse et remarques de chaque client.</figcaption>
+        </figure>
+        <div>
+          <ul class="bullets">
+            <li><span class="ui">Ajouter un client</span> : seul le nom est demandé. Le téléphone aide à relancer un impayé.</li>
+            <li>Le <strong>crayon</strong> modifie une fiche.</li>
+            <li>La zone <strong>Remarques</strong> garde une information utile, par exemple « Règle en fin de mois ».</li>
+            <li>Toute l’équipe peut ajouter et modifier des clients. La suppression est réservée aux pharmaciens et aux administrateurs.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 class="gap-l">PharmaCaisse sur téléphone</h2>
+      <p>Tout fonctionne aussi sur un téléphone ou une tablette, avec la même adresse et le même compte. Le menu s’ouvre avec le bouton à trois traits, en haut à gauche.</p>
+      <div class="cols gap-m" style="grid-template-columns: 42mm 42mm 42mm; gap: 12mm; justify-content: center">
+        <figure class="shot phone">
+          <div class="frame"><img src="captures/mobile-tableau-de-bord.jpg" alt="Tableau de bord sur téléphone." /></div>
+          <figcaption>Le tableau de bord.</figcaption>
+        </figure>
+        <figure class="shot phone">
+          <div class="frame"><img src="captures/mobile-caisse.jpg" alt="Nouvelle vente sur téléphone : liste des médicaments." /></div>
+          <figcaption>La caisse : la liste des médicaments…</figcaption>
+        </figure>
+        <figure class="shot phone">
+          <div class="frame"><img src="captures/mobile-panier.jpg" alt="Nouvelle vente sur téléphone : panier et montant payé." /></div>
+          <figcaption>… puis le panier, juste en dessous.</figcaption>
+        </figure>
+      </div>
+      <div class="note green gap-m">
+        <h3>Astuce</h3>
+        <p>Sur téléphone, le panier se trouve sous la liste des médicaments : faites défiler l’écran vers le bas pour encaisser.</p>
+      </div>
+    </section>
+
+    <!-- 11 · Équipe -->
+    <section class="page" id="equipe" data-title="Votre équipe">
+      <div class="chapter">
+        <span class="no">8</span>
+        <div>
+          <h1>Votre équipe</h1>
+          <p class="lead">Chaque personne a son propre compte. L’administrateur crée les comptes et choisit le rôle de chacun.</p>
+        </div>
+      </div>
+
+      <figure class="shot" style="width: 140mm; margin: 0 auto">
+        <div class="frame"><img src="captures/utilisateurs.jpg" alt="Page Utilisateurs : nom, e-mail, rôle et statut de chaque compte." /></div>
+        <figcaption>La page « Utilisateurs », réservée à l’administrateur.</figcaption>
+      </figure>
+
+      <div class="cols gap-s" style="grid-template-columns: 1fr 54mm">
+        <div>
+          <h2>Créer un compte pour un collègue</h2>
+          <ol class="steps">
+            <li><div>Dans <span class="ui">Utilisateurs</span>, cliquez sur <span class="ui">Ajouter un utilisateur</span>.</div></li>
+            <li><div>Saisissez son nom, son adresse e-mail et choisissez son <strong>rôle</strong>.</div></li>
+            <li><div>Choisissez un mot de passe d’au moins 8 caractères, puis cliquez sur <span class="ui">Créer le compte</span>.</div></li>
+            <li><div>Donnez-lui son adresse e-mail et son mot de passe : il peut se connecter tout de suite.</div></li>
+          </ol>
+          <p class="gap-s">Le <strong>crayon</strong> change le nom, le rôle ou le statut d’un compte. La <strong>clé</strong> lui donne un nouveau mot de passe, par exemple s’il l’a oublié.</p>
+        </div>
+        <figure class="shot">
+          <div class="frame"><img src="captures/utilisateur-ajout.jpg" alt="Fenêtre « Ajouter un utilisateur » : nom, rôle, adresse e-mail, mot de passe." /></div>
+        </figure>
+      </div>
+
+      <h2 class="gap-s">Les trois rôles</h2>
+      <table>
+        <thead>
+          <tr><th>Ce que la personne peut faire</th><th class="c">Caissier</th><th class="c">Pharmacien</th><th class="c">Administrateur</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Consulter le tableau de bord, le stock et les ventes</td><td class="c yes">Oui</td><td class="c yes">Oui</td><td class="c yes">Oui</td></tr>
+          <tr><td>Vendre à la caisse, encaisser un reste à payer</td><td class="c yes">Oui</td><td class="c yes">Oui</td><td class="c yes">Oui</td></tr>
+          <tr><td>Ajouter et modifier des clients</td><td class="c yes">Oui</td><td class="c yes">Oui</td><td class="c yes">Oui</td></tr>
+          <tr><td>Gérer les médicaments, les catégories et les fournisseurs</td><td class="c no-right">—</td><td class="c yes">Oui</td><td class="c yes">Oui</td></tr>
+          <tr><td>Annuler une vente</td><td class="c no-right">—</td><td class="c no-right">—</td><td class="c yes">Oui</td></tr>
+          <tr><td>Gérer les utilisateurs et l’abonnement</td><td class="c no-right">—</td><td class="c no-right">—</td><td class="c yes">Oui</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note green gap-m">
+        <h3>Changer son mot de passe</h3>
+        <p>Chacun peut changer le sien : ouvrez <span class="ui">Mon compte</span> dans le menu, saisissez deux fois le nouveau mot de passe, puis cliquez sur <span class="ui">Changer le mot de passe</span>.</p>
+      </div>
+    </section>
+
+    <!-- 12 · Abonnement -->
+    <section class="page" id="abonnement" data-title="L’abonnement">
+      <div class="chapter">
+        <span class="no">9</span>
+        <div>
+          <h1>L’abonnement</h1>
+          <p class="lead">Le premier mois est gratuit. Ensuite, vous choisissez une offre et vous payez depuis l’application.</p>
+        </div>
+      </div>
+
+      <figure class="shot" style="width: 150mm; margin: 0 auto">
+        <div class="frame">
+          <img src="captures/abonnement.jpg" alt="Page Abonnement : état de l’abonnement, offre mensuelle et offre annuelle." />
+          <span class="pin" style="left: 3.2%; top: 25.6%">1</span>
+          <span class="pin" style="left: 5.4%; top: 87%">2</span>
+        </div>
+        <figcaption>La page « Abonnement », réservée à l’administrateur. Prix relevés dans l’application en novembre 2026.</figcaption>
+      </figure>
+
+      <div class="cols gap-m" style="grid-template-columns: 1fr 1fr">
+        <div>
+          <h2>L’essai gratuit</h2>
+          <p>Il commence à la création de la pharmacie et dure <strong>1 mois (30 jours)</strong>. Tout est ouvert, sans rien payer. La date de fin et le nombre de jours restants s’affichent en haut de la page <span class="n">1</span>.</p>
+          <h2>Les offres</h2>
+          <table>
+            <tbody>
+              <tr><td>Abonnement mensuel</td><td style="text-align: right; white-space: nowrap"><strong>10 000 FCFA</strong> pour 1 mois</td></tr>
+              <tr><td>Abonnement annuel</td><td style="text-align: right; white-space: nowrap"><strong>100 000 FCFA</strong> pour 1 an</td></tr>
+            </tbody>
+          </table>
+          <p class="gap-s" style="color: var(--ink-muted); font-size: 9pt">Les prix affichés dans l’application sont ceux qui s’appliquent.</p>
+        </div>
+        <div>
+          <h2>Payer par Wave ou Orange Money</h2>
+          <ol class="steps">
+            <li><div>Ouvrez <span class="ui">Abonnement</span> dans le menu.</div></li>
+            <li><div>Sous l’offre choisie, cliquez sur <span class="ui">S’abonner</span> <span class="n">2</span>.</div></li>
+            <li><div>Sur la page de paiement, réglez avec <strong>Wave</strong> ou <strong>Orange Money</strong>.</div></li>
+            <li><div>Vous revenez dans l’application. Le paiement est vérifié, puis votre accès est prolongé.</div></li>
+          </ol>
+          <p class="gap-s">Chaque paiement est gardé dans l’<strong>historique des paiements</strong>, en bas de la page.</p>
+        </div>
+      </div>
+
+      <div class="cols gap-m" style="grid-template-columns: 1fr 1fr">
+        <div class="note green">
+          <h3>Payer avant la fin ne fait perdre aucun jour</h3>
+          <p>Un abonnement payé maintenant s’ajoute à la fin de la période en cours, essai compris.</p>
+        </div>
+        <div class="note">
+          <h3>Et si l’abonnement se termine ?</h3>
+          <p>L’application passe en <strong>lecture seule</strong> : vous consultez tout, mais les ventes et les modifications sont bloquées. <strong>Vos données sont conservées.</strong> Dès que l’administrateur renouvelle, tout repart.</p>
+        </div>
+      </div>
+      <p class="gap-m" style="color: var(--ink-muted); font-size: 9pt">L’administrateur est prévenu par un message dans l’application quelques jours avant la fin de l’essai ou de l’abonnement.</p>
+    </section>
+
+    <!-- 13 · Mobile money -->
+    <section class="page" id="mobile-money" data-title="Faire payer vos clients par mobile money">
+      <div class="chapter">
+        <span class="no">10</span>
+        <div>
+          <h1>Faire payer vos clients par mobile money</h1>
+          <p class="lead">Une option, à activer si vous le souhaitez. Sans elle, rien ne change : les espèces restent le mode de paiement habituel.</p>
+        </div>
+      </div>
+
+      <div class="note info">
+        <p><strong>Comment ça marche :</strong> à la caisse, un QR code s’affiche. Le client le scanne avec son téléphone et paie avec Wave ou Orange Money. L’argent arrive sur le compte <strong>NabooPay</strong> de votre pharmacie, et la vente est marquée payée automatiquement.</p>
+      </div>
+
+      <h2 class="gap-m">Activer l’option (administrateur)</h2>
+      <figure class="shot" style="width: 132mm; margin: 0 auto">
+        <div class="frame">
+          <img src="captures/mobile-money.jpg" alt="Bloc « Paiement mobile money » de la page Abonnement : clé d’API NabooPay et bouton d’activation." />
+          <span class="pin" style="left: 18.4%; top: 37.6%">2</span>
+          <span class="pin" style="left: 26%; top: 90.2%">3</span>
+        </div>
+        <figcaption>Le bloc « Paiement mobile money », en bas de la page « Abonnement ». Les deux autres champs (clé secrète et adresse du webhook) sont facultatifs.</figcaption>
+      </figure>
+      <ol class="steps gap-m">
+        <li><div>Il vous faut un compte NabooPay. Dans NabooPay, ouvrez <span class="ui">Paramètres, puis Intégration</span> et créez une clé d’API de portée « checkout ».</div></li>
+        <li><div>Dans PharmaCaisse, ouvrez <span class="ui">Abonnement</span> et collez la clé dans <span class="ui">Clé d’API NabooPay</span>.</div></li>
+        <li><div>Cliquez sur <span class="ui">Activer le paiement mobile</span>. La clé est vérifiée, puis gardée chiffrée : elle n’est plus jamais affichée. Les frais NabooPay sont à la charge de la pharmacie.</div></li>
+      </ol>
+
+      <h2 class="gap-m">À la caisse, en 3 étapes</h2>
+      <ol class="steps">
+        <li><div>Remplissez le panier, puis choisissez le mode de paiement <span class="ui">Mobile money</span> à la place de <span class="ui">Espèces</span>. Ce choix apparaît une fois l’option activée.</div></li>
+        <li><div>Enregistrez la vente : un <strong>QR code</strong> s’affiche. Le client le scanne et paie avec Wave ou Orange Money.</div></li>
+        <li><div>Dès que le paiement est reçu, la vente est <strong>payée</strong> et le stock est mis à jour. Vous n’avez rien à saisir.</div></li>
+      </ol>
+
+      <div class="cols gap-m" style="grid-template-columns: 1fr 1fr">
+        <div class="note">
+          <h3>Le client ne paie finalement pas ?</h3>
+          <p>Annulez la demande depuis l’écran du QR code : la vente est annulée et le stock est rendu. Vous pouvez alors refaire la vente en espèces.</p>
+        </div>
+        <div class="note green">
+          <h3>Aussi pour un reste à payer</h3>
+          <p>Dans le détail d’une vente à crédit, le bouton <span class="ui">Encaisser par mobile money</span> affiche un QR code pour le montant choisi.</p>
+        </div>
+      </div>
+      <p class="gap-m" style="color: var(--ink-muted); font-size: 9pt">Ce guide ne montre pas le QR code lui-même : il n’apparaît qu’avec une clé NabooPay active.</p>
+    </section>
+
+    <!-- 14 · FAQ et assistance -->
+    <section class="page" id="aide" data-title="Questions fréquentes et assistance">
+      <div class="chapter">
+        <span class="no">11</span>
+        <div>
+          <h1>Questions fréquentes</h1>
+          <p class="lead">Les réponses aux questions qui reviennent le plus souvent.</p>
+        </div>
+      </div>
+
+      <div class="faq">
+        <div><h3>Faut-il installer quelque chose ?</h3><p>Non. PharmaCaisse s’ouvre dans le navigateur de votre ordinateur, de votre tablette ou de votre téléphone.</p></div>
+        <div><h3>Faut-il une connexion internet ?</h3><p>Oui. L’application fonctionne en ligne : sans connexion, vous ne pouvez pas enregistrer de vente.</p></div>
+        <div><h3>Un médicament n’apparaît pas à la caisse. Pourquoi ?</h3><p>Il est en rupture ou périmé. Vérifiez sa quantité et sa date de péremption dans « Médicaments ».</p></div>
+        <div><h3>Je me suis trompé dans une vente. Que faire ?</h3><p>Demandez à un administrateur de l’annuler : le stock est rendu. Refaites ensuite la vente à la caisse.</p></div>
+        <div><h3>Un collègue a oublié son mot de passe.</h3><p>L’administrateur lui en donne un nouveau depuis « Utilisateurs », avec le bouton en forme de clé.</p></div>
+        <div><h3>Je suis administrateur et j’ai oublié le mien.</h3><p>Appelez l’assistance ou écrivez-nous sur WhatsApp, au numéro ci-dessous.</p></div>
+        <div><h3>Les autres pharmacies voient-elles mes données ?</h3><p>Non. Chaque pharmacie a son propre espace et ne voit que ses médicaments, ses ventes et ses clients.</p></div>
+        <div><h3>Que deviennent mes données à la fin de l’essai ?</h3><p>Elles sont conservées. L’application passe en lecture seule jusqu’à ce que vous preniez un abonnement.</p></div>
+        <div><h3>Plusieurs personnes peuvent-elles vendre en même temps ?</h3><p>Oui. Chaque personne se connecte avec son propre compte, sur son appareil. Le nom du vendeur est gardé sur chaque vente.</p></div>
+        <div><h3>Le paiement par mobile money est-il obligatoire ?</h3><p>Non, c’est une option. Sans elle, vous encaissez en espèces comme d’habitude.</p></div>
+      </div>
+
+      <h2 class="gap-m">Besoin d’aide ?</h2>
+      <div class="cols" style="grid-template-columns: 1fr 50mm">
+        <div>
+          <div class="help">
+            <div>
+              <h2>Assistance PharmaCaisse</h2>
+              <p>Par téléphone ou sur WhatsApp, au même numéro.</p>
+            </div>
+            <div>
+              <p class="tel">78 123 50 11</p>
+              <small>Depuis l’étranger : +221 78 123 50 11</small>
+            </div>
+          </div>
+          <ul class="bullets gap-m">
+            <li>Dans l’application, le bloc <strong>Besoin d’aide ?</strong> du menu propose <span class="ui">Appeler</span>, <span class="ui">WhatsApp</span> et ce guide.</li>
+            <li><strong>Votre avis compte.</strong> Le bouton <span class="ui">Donner mon avis</span>, dans le même bloc, ouvre une fenêtre : donnez une note sur 5 étoiles, et dites-nous si vous le voulez ce qui vous plaît, ce qui vous gêne ou ce qui vous manque.</li>
+          </ul>
+          <figure class="shot gap-m" style="width: 56mm">
+            <div class="frame" style="height: 33.4mm"><img src="captures/menu.jpg" alt="Bloc « Besoin d’aide ? » du menu : Appeler, WhatsApp, guide d’utilisation, donner mon avis." style="margin-top: -119.6mm" /></div>
+            <figcaption>Le bloc « Besoin d’aide ? », dans le menu.</figcaption>
+          </figure>
+        </div>
+        <figure class="shot">
+          <div class="frame"><img src="captures/avis.jpg" alt="Fenêtre « Donner mon avis » : note sur 5 étoiles et deux zones de texte facultatives." /></div>
+          <figcaption>La fenêtre « Donner mon avis ».</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <script>
+      // En-tête et pied de chaque page (sauf la couverture), puis numéros de page du sommaire.
+      const pages = [...document.querySelectorAll('.page')]
+      pages.forEach((page) => {
+        const title = page.dataset.title
+        if (!title) return
+        const body = document.createElement('div')
+        body.className = 'body'
+        body.append(...page.childNodes)
+        const head = document.createElement('div')
+        head.className = 'running'
+        head.innerHTML = '<svg aria-hidden="true"><use href="#logo" /></svg><b>PharmaCaisse</b><span>Guide d’utilisation</span>'
+        const foot = document.createElement('div')
+        foot.className = 'foot'
+        const label = document.createElement('span')
+        label.textContent = title
+        const number = document.createElement('span')
+        number.className = 'num'
+        foot.append(label, number)
+        page.append(head, body, foot)
+      })
+      document.querySelectorAll('[data-page]').forEach((cell) => {
+        const index = pages.findIndex((page) => page.id === cell.dataset.page)
+        cell.textContent = index >= 0 ? String(index + 1) : ''
+      })
+    </script>
+  </body>
+</html>

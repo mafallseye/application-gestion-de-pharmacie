@@ -85,6 +85,10 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+  /* Sur un écran peu haut, la liste défile : son bas s'estompe au lieu d'être coupé net. */
+  padding-bottom: var(--space-5);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
 }
 
 .navList {

@@ -7,9 +7,9 @@ const BLISTER = [1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 
 /**
  * Mise en page des écrans hors session : connexion, compte en attente d'activation…
  * Props : title, subtitle?, children (formulaire ou message), footer? (nœud sous la
- * carte, ex. lien d'aide), brand? (défaut « Pharmacie »).
+ * carte, ex. lien d'aide), brand? (défaut « PharmaCaisse »).
  */
-export function AuthLayout({ title, subtitle, children, footer, brand = 'Pharmacie' }) {
+export function AuthLayout({ title, subtitle, children, footer, brand = 'PharmaCaisse' }) {
   return (
     <div className={styles.layout}>
       <aside className={styles.aside}>

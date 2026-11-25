@@ -15,7 +15,7 @@ Refonte complète de la première version (PHP / MySQL, 2022) en **React** avec 
 - **Utilisateurs** : comptes créés par l'administrateur de la pharmacie, avec trois rôles.
 - **Paiement des ventes par mobile money** (facultatif) : la pharmacie enregistre sa propre clé NabooPay ; à la caisse, le client scanne un QR code et paie avec Wave ou Orange Money, et la vente est soldée automatiquement. Les espèces restent le mode par défaut.
 - **Plusieurs pharmacies** : chaque pharmacie s'inscrit, crée son espace et ne voit que ses propres données ; ses ventes sont numérotées à part.
-- **Abonnement** : 14 jours d'essai, puis offre mensuelle ou annuelle payée en ligne. Sans accès en cours, la pharmacie passe en lecture seule (elle garde ses données).
+- **Abonnement** : 30 jours d'essai, puis offre mensuelle ou annuelle payée en ligne. Sans accès en cours, la pharmacie passe en lecture seule (elle garde ses données).
 
 | Rôle | Peut faire |
 |---|---|
