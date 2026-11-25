@@ -5,3 +5,7 @@ verify_jwt = false
 # La fonction authentifie elle-même l'appelant et reçoit aussi la notification de PayDunya.
 [functions.billing]
 verify_jwt = false
+
+# Authentifie elle-même l'appelant et reçoit les notifications NabooPay des pharmacies.
+[functions.sale-payments]
+verify_jwt = false
