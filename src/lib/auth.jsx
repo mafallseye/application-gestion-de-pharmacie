@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AppError, toAppError, unwrap } from './errors.js'
 import { queryKeys } from './queryKeys.js'
 import { subscriptionState } from './subscription.js'
-import { supabase } from './supabase.js'
+import { arrival, supabase } from './supabase.js'
 
 const AuthContext = createContext(null)
 
@@ -46,6 +46,28 @@ async function changePassword(password) {
   if (error) throw toAppError(error)
 }
 
+const EMAIL_RATE_LIMIT = 'Trop de demandes. Réessayez dans quelques minutes.'
+
+/**
+ * Envoie l'e-mail « mot de passe oublié ». Le lien ramène sur
+ * /nouveau-mot-de-passe (adresse à autoriser dans le projet Supabase).
+ * L'écran doit rester le même que le compte existe ou non.
+ */
+async function requestPasswordReset(email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/nouveau-mot-de-passe`,
+  })
+  if (!error) return
+  // Limite d'envoi d'e-mails du projet (quelques messages par heure avec le service intégré).
+  if (error.status === 429) throw new AppError(EMAIL_RATE_LIMIT, { code: '429', cause: error })
+  // Panne réseau ou du service : l'utilisateur doit savoir que rien n'est parti.
+  const appError = toAppError(error)
+  if (appError.retryable) throw appError
+  // Tout autre refus (ex. adresse que le service d'e-mail n'accepte pas) n'arrive
+  // que pour un compte existant : l'afficher révélerait qui est inscrit. L'écran
+  // reste donc le même que pour une adresse inconnue.
+}
+
 // Un compte désactivé ou un rôle modifié par un administrateur est pris en
 // compte sans rechargement, au plus tard après ce délai.
 const PROFILE_REFRESH_MS = 60_000
@@ -55,6 +77,9 @@ export function AuthProvider({ children }) {
   const queryClient = useQueryClient()
   // undefined = session pas encore lue ; null = déconnecté.
   const [session, setSession] = useState(supabase ? undefined : null)
+  // Session ouverte par un lien « mot de passe oublié » : l'utilisateur doit
+  // d'abord choisir son nouveau mot de passe (voir les gardes de route).
+  const [passwordRecovery, setPasswordRecovery] = useState(arrival.recovery)
 
   useEffect(() => {
     if (!supabase) return undefined
@@ -65,6 +90,8 @@ export function AuthProvider({ children }) {
       setSession(nextSession)
       // Aucune donnée d'un utilisateur ne doit rester en mémoire après lui.
       if (event === 'SIGNED_OUT') queryClient.clear()
+      if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true)
+      if (event === 'SIGNED_OUT') setPasswordRecovery(false)
     })
     return () => data.subscription.unsubscribe()
   }, [queryClient])
@@ -110,11 +137,15 @@ export function AuthProvider({ children }) {
       canManage: canWrite && (profile.role === 'admin' || profile.role === 'pharmacien'),
       refreshProfile: () => queryClient.invalidateQueries({ queryKey: queryKeys.profile(user?.id) }),
       signUp,
+      requestPasswordReset,
+      // Vrai tant que le nouveau mot de passe n'a pas été choisi après un lien de récupération.
+      passwordRecovery: passwordRecovery && user !== null,
+      finishPasswordRecovery: () => setPasswordRecovery(false),
       signIn,
       signOut,
       changePassword,
     }
-  }, [session, user, profile, queryClient, profileQuery.isPending, profileQuery.isSuccess, profileQuery.error, profileQuery.dataUpdatedAt])
+  }, [session, user, profile, queryClient, passwordRecovery, profileQuery.isPending, profileQuery.isSuccess, profileQuery.error, profileQuery.dataUpdatedAt])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

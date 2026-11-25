@@ -11,7 +11,7 @@ import styles from './auth.module.css'
 
 export default function LoginPage() {
   usePageTitle('Connexion')
-  const { user, loading, signIn } = useAuth()
+  const { user, loading, signIn, passwordRecovery } = useAuth()
   const location = useLocation()
   const [form, setForm] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false)
 
   // Déjà connecté (ou connexion réussie) : retour à la page demandée.
+  if (passwordRecovery) return <Navigate to="/nouveau-mot-de-passe" replace />
   if (user) return <Navigate to={location.state?.from ?? '/'} replace />
   if (loading) return <PageLoader />
 
@@ -67,6 +68,9 @@ export default function LoginPage() {
         <Button type="submit" fullWidth loading={submitting}>
           Se connecter
         </Button>
+        <p className={styles.aside}>
+          <Link to="/mot-de-passe-oublie">Mot de passe oublié ?</Link>
+        </p>
       </form>
     </AuthLayout>
   )

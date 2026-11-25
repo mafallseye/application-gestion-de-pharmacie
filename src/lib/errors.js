@@ -39,7 +39,7 @@ const BY_AUTH_CODE = {
   email_exists: 'Cette adresse e-mail est déjà utilisée. Connectez-vous, ou choisissez une autre adresse.',
   signup_disabled: "Les inscriptions sont fermées pour le moment.",
   email_address_invalid: "Cette adresse e-mail n'est pas acceptée. Vérifiez-la ou utilisez-en une autre.",
-  over_email_send_rate_limit: 'Trop de demandes pour le moment. Réessayez dans quelques minutes.',
+  over_email_send_rate_limit: 'Trop de demandes. Réessayez dans quelques minutes.',
   same_password: "Le nouveau mot de passe doit être différent de l'ancien.",
   weak_password: 'Ce mot de passe est trop faible. Choisissez-en un plus long ou moins courant.',
   reauthentication_needed: 'Pour changer de mot de passe, déconnectez-vous puis reconnectez-vous, et réessayez.',

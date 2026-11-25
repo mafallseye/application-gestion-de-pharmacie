@@ -235,6 +235,13 @@ export function validateFeedback(input = {}) {
   return { values, errors }
 }
 
+/** Demande « mot de passe oublié » : une adresse e-mail bien formée. */
+export function validateEmailAddress(input = {}) {
+  const errors = {}
+  const values = { email: email(errors, input.email) }
+  return { values, errors }
+}
+
 /** Formulaire de connexion (aucune règle de longueur : on ne décrit pas les mots de passe valides). */
 export function validateLogin(input = {}) {
   const errors = {}

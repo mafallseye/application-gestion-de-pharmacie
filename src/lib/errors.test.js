@@ -56,6 +56,11 @@ describe('errorMessage', () => {
     const message = 'Les prix ont changé : le total est maintenant de 5400 FCFA. Vérifiez le panier.'
     expect(errorMessage({ code: '22023', message })).toBe(message)
   })
+  it('traduit la limite d’envoi des e-mails', () => {
+    expect(errorMessage({ code: 'over_email_send_rate_limit', status: 429, message: 'email rate limit exceeded' })).toBe(
+      'Trop de demandes. Réessayez dans quelques minutes.',
+    )
+  })
   it("n'affiche jamais un message technique inconnu", () => {
     const generic = 'Une erreur est survenue. Réessayez.'
     expect(errorMessage({ code: '42703', message: 'column "foo" does not exist' })).toBe(generic)

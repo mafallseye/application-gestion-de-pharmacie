@@ -3,6 +3,7 @@ import {
   hasErrors,
   validateCategory,
   validateCustomer,
+  validateEmailAddress,
   validateFeedback,
   validateLogin,
   validateMobileMoneyKeys,
@@ -262,5 +263,15 @@ describe('validateFeedback', () => {
   it('limite les textes à 2000 caractères', () => {
     const { errors } = validateFeedback({ rating: '3', message: 'a'.repeat(2001), missing: 'b'.repeat(2001) })
     expect(Object.keys(errors).sort()).toEqual(['message', 'missing'])
+  })
+})
+
+describe('validateEmailAddress', () => {
+  it('normalise une adresse valide', () => {
+    expect(validateEmailAddress({ email: ' Awa@Exemple.SN ' })).toEqual({ values: { email: 'awa@exemple.sn' }, errors: {} })
+  })
+  it('refuse une adresse vide ou mal formée', () => {
+    expect(validateEmailAddress({}).errors.email).toBe("L'adresse e-mail est obligatoire.")
+    expect(validateEmailAddress({ email: 'awa@exemple' }).errors.email).toBe("L'adresse e-mail n'est pas valide.")
   })
 })

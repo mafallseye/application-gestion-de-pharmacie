@@ -27,6 +27,8 @@ const CategoriesPage = lazy(() => import('./features/categories/CategoriesPage.j
 const CustomersPage = lazy(() => import('./features/customers/CustomersPage.jsx'))
 const SuppliersPage = lazy(() => import('./features/suppliers/SuppliersPage.jsx'))
 const UsersPage = lazy(() => import('./features/users/UsersPage.jsx'))
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage.jsx'))
+const NewPasswordPage = lazy(() => import('./pages/NewPasswordPage.jsx'))
 const SignupPage = lazy(() => import('./pages/SignupPage.jsx'))
 const CreatePharmacyPage = lazy(() => import('./pages/CreatePharmacyPage.jsx'))
 const SubscriptionPage = lazy(() => import('./features/billing/SubscriptionPage.jsx'))
@@ -65,11 +67,13 @@ const PREVIEW_ROUTES = previewRoutes()
 
 /** Garde des pages connectées : session, pharmacie, profil actif, puis coque de l'application. */
 function ProtectedLayout() {
-  const { loading, user, profile, profileError, needsPharmacy, pharmacy, isStaff, isAdmin, signOut } = useAuth()
+  const { loading, user, profile, profileError, needsPharmacy, pharmacy, isStaff, isAdmin, signOut, passwordRecovery } = useAuth()
   const location = useLocation()
 
   if (loading) return <PageLoader />
   if (!user) return <Navigate to="/connexion" replace state={{ from: location.pathname + location.search }} />
+  // Arrivée par un lien « mot de passe oublié » : le nouveau mot de passe d'abord, quel que soit l'état du compte.
+  if (passwordRecovery) return <Navigate to="/nouveau-mot-de-passe" replace />
   if (!profile && profileError) return <AccountStatusPage error={profileError} />
   if (needsPharmacy) return <CreatePharmacyPage />
   if (!isStaff || !pharmacy) return <AccountStatusPage />
@@ -105,6 +109,8 @@ function AppRoutes() {
       {PREVIEW_ROUTES}
       <Route path="/connexion" element={<LoginPage />} />
       <Route path="/inscription" element={<SignupPage />} />
+      <Route path="/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
+      <Route path="/nouveau-mot-de-passe" element={<NewPasswordPage />} />
       <Route element={<ProtectedLayout />}>
         <Route index element={<DashboardPage />} />
         <Route path="caisse" element={<NewSalePage />} />

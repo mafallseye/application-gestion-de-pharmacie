@@ -34,3 +34,9 @@
 .support {
   margin-top: var(--space-2);
 }
+
+/* Lien secondaire sous un formulaire (ex. « Mot de passe oublié ? »). */
+.aside {
+  font-size: var(--text-sm);
+  text-align: center;
+}
