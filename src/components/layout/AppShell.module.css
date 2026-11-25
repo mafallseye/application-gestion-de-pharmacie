@@ -85,10 +85,6 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgb(255 255 255 / 0.2) transparent;
-  /* Sur un écran peu haut, la liste défile : son bas s'estompe au lieu d'être coupé net. */
-  padding-bottom: var(--space-5);
-  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
-  mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
 }
 
 .navList {
@@ -267,7 +263,8 @@
   width: 100%;
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: var(--space-8) var(--space-8) var(--space-16);
+  /* --help-fab-space : place du bouton d'aide flottant (0 s'il est absent). */
+  padding: var(--space-8) var(--space-8) calc(var(--space-16) + var(--help-fab-space, 0px));
 }
 
 .topbar,
@@ -393,12 +390,33 @@
   }
 
   .content {
-    padding: var(--space-6) var(--space-5) var(--space-12);
+    padding: var(--space-6) var(--space-5) calc(var(--space-12) + var(--help-fab-space, 0px));
+  }
+}
+
+/* Téléphone peu haut : le tiroir se resserre pour montrer tout le menu sans défilement
+   (les entrées gardent 44 px de haut). */
+@media (max-width: 900px) and (max-height: 740px) {
+  .brand {
+    padding-top: var(--space-3);
+    padding-bottom: var(--space-3);
+  }
+
+  .navList {
+    gap: 0;
+  }
+
+  .navLink {
+    min-height: 2.75rem;
+  }
+
+  .userEmail {
+    display: none;
   }
 }
 
 @media (max-width: 560px) {
   .content {
-    padding: var(--space-5) var(--space-4) var(--space-12);
+    padding: var(--space-5) var(--space-4) calc(var(--space-12) + var(--help-fab-space, 0px));
   }
 }

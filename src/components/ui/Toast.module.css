@@ -1,7 +1,8 @@
 .region {
   position: fixed;
   right: var(--space-5);
-  bottom: var(--space-5);
+  /* Au-dessus du bouton d'aide flottant quand il est présent (--help-fab-space). */
+  bottom: calc(var(--space-5) + var(--help-fab-space, 0px));
   z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
@@ -72,7 +73,7 @@
   .region {
     right: var(--space-4);
     left: var(--space-4);
-    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    bottom: calc(max(var(--space-4), env(safe-area-inset-bottom)) + var(--help-fab-space, 0px));
     width: auto;
   }
 }

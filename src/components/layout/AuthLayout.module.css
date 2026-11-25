@@ -81,7 +81,8 @@
 .main {
   display: grid;
   place-items: center;
-  padding: var(--space-10) var(--space-6);
+  /* --help-fab-space : place du bouton d'aide flottant (0 s'il est absent). */
+  padding: var(--space-10) var(--space-6) calc(var(--space-10) + var(--help-fab-space, 0px));
   background: var(--color-surface);
 }
 
@@ -153,7 +154,7 @@
 
   .main {
     place-items: start center;
-    padding: var(--space-8) var(--space-5) var(--space-10);
+    padding: var(--space-8) var(--space-5) calc(var(--space-10) + var(--help-fab-space, 0px));
   }
 
   .title {
