@@ -59,6 +59,15 @@ export function formatDateTime(value) {
   return date === null ? EMPTY : dateTimeFormat.format(date).replace(',', '')
 }
 
+const TITLES = new Set(['dr', 'pr', 'm', 'mr', 'mme', 'mlle'])
+
+/** Prénom pour saluer quelqu'un : premier mot du nom, sans le titre (« Dr Aminata Sow » → « Aminata »). */
+export function firstName(fullName) {
+  const words = String(fullName ?? '').trim().split(/\s+/).filter(Boolean)
+  const isTitle = (word) => TITLES.has(word.replace(/\.$/, '').toLowerCase())
+  return (words.length > 1 && isTitle(words[0]) ? words[1] : words[0]) ?? ''
+}
+
 /** Date du jour à Dakar (= UTC) au format AAAA-MM-JJ. */
 export function todayISO(now = new Date()) {
   return now.toISOString().slice(0, 10)

@@ -52,7 +52,7 @@ export default function CreatePharmacyPage() {
   return (
     <AuthLayout
       title="Créez votre pharmacie"
-      subtitle="Dernière étape : vous en serez l’administrateur, avec 14 jours d’essai gratuit."
+      subtitle="Dernière étape : vous en serez l’administrateur, avec 1 mois d’essai gratuit (30 jours)."
       footer={
         <>
           Connecté en tant que {user.email}.{' '}

@@ -6,6 +6,7 @@ import { AppShell } from './components/layout/AppShell.jsx'
 import { PageLoader, ToastProvider } from './components/ui'
 import { SubscriptionBanner } from './features/billing/SubscriptionBanner.jsx'
 import { ErrorBoundary } from './features/shared/ErrorBoundary.jsx'
+import { HelpBlock } from './features/shared/HelpBlock.jsx'
 import { AuthProvider, useAuth } from './lib/auth.jsx'
 import { createQueryClient } from './lib/queryClient.js'
 import { isSupabaseConfigured } from './lib/supabase.js'
@@ -78,6 +79,7 @@ function ProtectedLayout() {
       user={{ name: profile.full_name, email: profile.email, role: profile.role }}
       navItems={NAV_ITEMS.filter((item) => isAdmin || !item.adminOnly)}
       brandHint={pharmacy.name}
+      sidebarFooter={<HelpBlock />}
       onSignOut={signOut}
     >
       <SubscriptionBanner />

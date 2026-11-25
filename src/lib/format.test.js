@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   daysUntilExpiry,
+  firstName,
   formatDate,
   formatDateTime,
   formatMoney,
@@ -96,5 +97,22 @@ describe('état des médicaments', () => {
       outOfStock: true,
       daysUntilExpiry: 5,
     })
+  })
+})
+
+describe('firstName', () => {
+  it('prend le premier mot du nom', () => {
+    expect(firstName('Awa Ndiaye')).toBe('Awa')
+    expect(firstName('  Moussa  ')).toBe('Moussa')
+  })
+  it('ignore un titre en tête', () => {
+    expect(firstName('Dr Aminata Sow')).toBe('Aminata')
+    expect(firstName('Dr. Aminata Sow')).toBe('Aminata')
+    expect(firstName('Mme Fatou Sarr')).toBe('Fatou')
+  })
+  it('garde un mot seul, même si c’est un titre, et accepte le vide', () => {
+    expect(firstName('Dr')).toBe('Dr')
+    expect(firstName('')).toBe('')
+    expect(firstName(null)).toBe('')
   })
 })

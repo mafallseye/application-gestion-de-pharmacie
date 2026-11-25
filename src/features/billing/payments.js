@@ -1,4 +1,5 @@
 // Paiements d'abonnement : libellés par statut et choix des paiements à revérifier (pur).
+import { SUPPORT_CONTACT } from '../../lib/support.js'
 
 const RECHECK_WINDOW_MS = 48 * 60 * 60 * 1000
 
@@ -31,8 +32,7 @@ const OUTCOMES = {
   review: {
     tone: 'info',
     title: 'Paiement reçu, en cours de contrôle',
-    message:
-      'Paiement reçu. Sa validation demande une vérification manuelle : contactez le support, votre abonnement sera activé après contrôle.',
+    message: `Paiement reçu. Sa validation demande une vérification manuelle : contactez ${SUPPORT_CONTACT}, votre abonnement sera activé après contrôle.`,
     retry: false,
   },
   error: {

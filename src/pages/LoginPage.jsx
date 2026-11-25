@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { AuthLayout } from '../components/layout/AuthLayout.jsx'
 import { Alert, Button, Field, Input, PageLoader } from '../components/ui'
+import { SupportLine } from '../features/shared/SupportLine.jsx'
 import { usePageTitle } from '../features/shared/usePageTitle.js'
 import { useAuth } from '../lib/auth.jsx'
 import { errorMessage } from '../lib/errors.js'
@@ -51,6 +52,7 @@ export default function LoginPage() {
         <>
           Nouvelle pharmacie ? <Link to="/inscription">Créer un compte</Link>. Si vous rejoignez une pharmacie déjà inscrite,
           demandez à son administrateur de vous créer un compte.
+          <SupportLine guide className={styles.support} />
         </>
       }
     >

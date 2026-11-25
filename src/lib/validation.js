@@ -222,6 +222,19 @@ export function validateMobileMoneyKeys(input = {}) {
   return { values, errors }
 }
 
+/** Avis sur l'application : note de 1 à 5 obligatoire, deux remarques facultatives (2000 caractères). */
+export function validateFeedback(input = {}) {
+  const errors = {}
+  const rating = Number(input.rating)
+  const values = {
+    rating: Number.isInteger(rating) && rating >= 1 && rating <= 5 ? rating : null,
+    message: optionalText(errors, 'message', input.message, 2000, 'Votre avis'),
+    missing: optionalText(errors, 'missing', input.missing, 2000, 'Ce texte'),
+  }
+  if (values.rating === null) errors.rating = 'Choisissez une note de 1 à 5 étoiles.'
+  return { values, errors }
+}
+
 /** Formulaire de connexion (aucune règle de longueur : on ne décrit pas les mots de passe valides). */
 export function validateLogin(input = {}) {
   const errors = {}

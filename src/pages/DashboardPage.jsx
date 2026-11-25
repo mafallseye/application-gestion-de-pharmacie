@@ -8,7 +8,7 @@ import { PaymentBadge } from '../features/sales/PaymentBadge.jsx'
 import { LoadError } from '../features/shared/LoadError.jsx'
 import { usePageTitle } from '../features/shared/usePageTitle.js'
 import { useAuth } from '../lib/auth.jsx'
-import { formatDateTime, formatMoney, formatNumber } from '../lib/format.js'
+import { firstName, formatDateTime, formatMoney, formatNumber } from '../lib/format.js'
 import styles from './DashboardPage.module.css'
 
 const weekday = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', timeZone: 'UTC' })
@@ -26,13 +26,13 @@ export default function DashboardPage() {
   const { profile } = useAuth()
   const stats = useDashboardStats()
   const recentSales = useSales({ limit: 5 })
-  const firstName = profile.full_name.trim().split(/\s+/)[0]
+  const name = firstName(profile.full_name)
 
   return (
     <>
       <PageHeader
         title="Tableau de bord"
-        subtitle={firstName ? `Bonjour ${firstName}, voici l’activité de la pharmacie.` : 'Activité de la pharmacie.'}
+        subtitle={name ? `Bonjour ${name}, voici l’activité de la pharmacie.` : 'Activité de la pharmacie.'}
         actions={newSaleButton}
       />
 

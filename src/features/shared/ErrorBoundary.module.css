@@ -4,3 +4,7 @@
   min-height: 100dvh;
   padding: var(--space-6);
 }
+
+.support {
+  margin-top: var(--space-4);
+}

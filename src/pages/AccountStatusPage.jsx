@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { AuthLayout } from '../components/layout/AuthLayout.jsx'
 import { Alert, Button, useToast } from '../components/ui'
+import { SupportLine } from '../features/shared/SupportLine.jsx'
 import { usePageTitle } from '../features/shared/usePageTitle.js'
 import { useAuth } from '../lib/auth.jsx'
 import { errorMessage } from '../lib/errors.js'
@@ -44,7 +45,12 @@ export default function AccountStatusPage({ error = null }) {
           ? 'Votre session est ouverte, mais votre profil n’a pas pu être chargé.'
           : 'Votre compte existe, mais un administrateur doit encore l’activer et vous attribuer un rôle.'
       }
-      footer={`Connecté en tant que ${user.email}`}
+      footer={
+        <>
+          Connecté en tant que {user.email}
+          <SupportLine className={styles.support} />
+        </>
+      }
     >
       <div className={styles.form}>
         {error ? (

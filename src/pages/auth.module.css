@@ -29,3 +29,8 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 0.18em;
 }
+
+/* Ligne d'assistance sous le pied de page. */
+.support {
+  margin-top: var(--space-2);
+}

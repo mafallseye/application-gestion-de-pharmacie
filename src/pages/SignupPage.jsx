@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { AuthLayout } from '../components/layout/AuthLayout.jsx'
 import { Alert, Button, Field, Input, PageLoader } from '../components/ui'
+import { SupportLine } from '../features/shared/SupportLine.jsx'
 import { usePageTitle } from '../features/shared/usePageTitle.js'
 import { useAuth } from '../lib/auth.jsx'
 import { errorMessage } from '../lib/errors.js'
@@ -76,10 +77,11 @@ export default function SignupPage() {
   return (
     <AuthLayout
       title="Créer un compte"
-      subtitle="Inscrivez votre pharmacie : 14 jours d’essai gratuit, sans engagement."
+      subtitle="Inscrivez votre pharmacie : 1 mois d’essai gratuit, sans engagement."
       footer={
         <>
           Déjà inscrit ? <Link to="/connexion">Se connecter</Link>
+          <SupportLine className={styles.support} />
         </>
       }
     >

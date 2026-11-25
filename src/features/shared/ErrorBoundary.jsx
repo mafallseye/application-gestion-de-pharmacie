@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import { RefreshCw, TriangleAlert } from 'lucide-react'
 import { Button, EmptyState } from '../../components/ui'
+import { SupportLine } from './SupportLine.jsx'
 import styles from './ErrorBoundary.module.css'
 
 /**
@@ -33,9 +34,12 @@ export class ErrorBoundary extends Component {
           title="Cette page n’a pas pu s’afficher"
           message="Une nouvelle version de l’application a peut-être été installée, ou la connexion a été interrompue. Rechargez la page pour continuer."
           action={
-            <Button icon={RefreshCw} onClick={() => window.location.reload()}>
-              Recharger la page
-            </Button>
+            <>
+              <Button icon={RefreshCw} onClick={() => window.location.reload()}>
+                Recharger la page
+              </Button>
+              <SupportLine className={styles.support} />
+            </>
           }
         />
       </div>

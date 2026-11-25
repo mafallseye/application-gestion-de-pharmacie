@@ -23,7 +23,7 @@ describe('paymentOutcome', () => {
     const outcome = paymentOutcome('review')
     expect(outcome.tone).not.toBe('danger')
     expect(outcome.message).toBe(
-      'Paiement reçu. Sa validation demande une vérification manuelle : contactez le support, votre abonnement sera activé après contrôle.',
+      'Paiement reçu. Sa validation demande une vérification manuelle : contactez l’assistance au 78 123 50 11 (appel ou WhatsApp), votre abonnement sera activé après contrôle.',
     )
     expect(`${outcome.title} ${outcome.message}`).not.toMatch(/échou/i)
   })

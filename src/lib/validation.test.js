@@ -3,6 +3,7 @@ import {
   hasErrors,
   validateCategory,
   validateCustomer,
+  validateFeedback,
   validateLogin,
   validateMobileMoneyKeys,
   validateMedicine,
@@ -240,5 +241,26 @@ describe('validateMobileMoneyKeys', () => {
   it('contrôle les longueurs (8 à 500 caractères)', () => {
     const { errors } = validateMobileMoneyKeys({ api_key: 'court', webhook_secret: 'x'.repeat(501) })
     expect(Object.keys(errors).sort()).toEqual(['api_key', 'webhook_secret'])
+  })
+})
+
+describe('validateFeedback', () => {
+  it('normalise un avis complet', () => {
+    expect(validateFeedback({ rating: '4', message: '  Très pratique à la caisse.  ', missing: ' Un export Excel ' })).toEqual({
+      values: { rating: 4, message: 'Très pratique à la caisse.', missing: 'Un export Excel' },
+      errors: {},
+    })
+  })
+  it('la note seule suffit', () => {
+    expect(validateFeedback({ rating: 5 })).toEqual({ values: { rating: 5, message: '', missing: '' }, errors: {} })
+  })
+  it('refuse une note absente ou hors de 1 à 5', () => {
+    for (const rating of ['', undefined, '0', '6', '2.5', 'abc']) {
+      expect(validateFeedback({ rating }).errors.rating).toBe('Choisissez une note de 1 à 5 étoiles.')
+    }
+  })
+  it('limite les textes à 2000 caractères', () => {
+    const { errors } = validateFeedback({ rating: '3', message: 'a'.repeat(2001), missing: 'b'.repeat(2001) })
+    expect(Object.keys(errors).sort()).toEqual(['message', 'missing'])
   })
 })
