@@ -29,6 +29,7 @@ const UsersPage = lazy(() => import('./features/users/UsersPage.jsx'))
 const SignupPage = lazy(() => import('./pages/SignupPage.jsx'))
 const CreatePharmacyPage = lazy(() => import('./pages/CreatePharmacyPage.jsx'))
 const SubscriptionPage = lazy(() => import('./features/billing/SubscriptionPage.jsx'))
+const MobilePaymentReturnPage = lazy(() => import('./pages/MobilePaymentReturnPage.jsx'))
 const AccountPage = lazy(() => import('./features/account/AccountPage.jsx'))
 const NAV_ITEMS = [
   { to: '/', label: 'Tableau de bord', icon: LayoutDashboard, end: true },
@@ -139,13 +140,22 @@ export default function App() {
         <BrowserRouter>
           <ToastProvider>
             <Suspense fallback={<PageLoader />}>
-              {isSupabaseConfigured ? (
-                <AuthProvider>
-                  <AppRoutes />
-                </AuthProvider>
-              ) : (
-                <SetupRoutes />
-              )}
+              <Routes>
+                {/* Page publique du téléphone du client : hors session, aucun appel. */}
+                <Route path="/paiement-mobile" element={<MobilePaymentReturnPage />} />
+                <Route
+                  path="*"
+                  element={
+                    isSupabaseConfigured ? (
+                      <AuthProvider>
+                        <AppRoutes />
+                      </AuthProvider>
+                    ) : (
+                      <SetupRoutes />
+                    )
+                  }
+                />
+              </Routes>
             </Suspense>
           </ToastProvider>
         </BrowserRouter>

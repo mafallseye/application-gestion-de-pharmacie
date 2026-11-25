@@ -210,6 +210,18 @@ export function validatePharmacyRegistration(input = {}) {
   return { values, errors }
 }
 
+/** Clés NabooPay de la pharmacie : clé d'API obligatoire, clé du webhook facultative (8 à 500 caractères). */
+export function validateMobileMoneyKeys(input = {}) {
+  const errors = {}
+  const values = { api_key: text(input.api_key), webhook_secret: text(input.webhook_secret) }
+  if (values.api_key === '') errors.api_key = "La clé d'API est obligatoire."
+  else if (values.api_key.length < 8 || values.api_key.length > 500) errors.api_key = "La clé d'API doit contenir entre 8 et 500 caractères."
+  if (values.webhook_secret !== '' && (values.webhook_secret.length < 8 || values.webhook_secret.length > 500)) {
+    errors.webhook_secret = 'La clé du webhook doit contenir entre 8 et 500 caractères.'
+  }
+  return { values, errors }
+}
+
 /** Formulaire de connexion (aucune règle de longueur : on ne décrit pas les mots de passe valides). */
 export function validateLogin(input = {}) {
   const errors = {}

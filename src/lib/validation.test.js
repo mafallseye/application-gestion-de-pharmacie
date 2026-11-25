@@ -4,6 +4,7 @@ import {
   validateCategory,
   validateCustomer,
   validateLogin,
+  validateMobileMoneyKeys,
   validateMedicine,
   validatePassword,
   validatePasswordChange,
@@ -225,5 +226,19 @@ describe('validatePharmacy / validatePharmacyRegistration', () => {
       address: '',
       full_name: 'Awa',
     })
+  })
+})
+
+describe('validateMobileMoneyKeys', () => {
+  it('clé d’API obligatoire, clé du webhook facultative', () => {
+    expect(validateMobileMoneyKeys({ api_key: '  naboo_cle_12345  ' })).toEqual({
+      values: { api_key: 'naboo_cle_12345', webhook_secret: '' },
+      errors: {},
+    })
+    expect(validateMobileMoneyKeys({}).errors).toEqual({ api_key: "La clé d'API est obligatoire." })
+  })
+  it('contrôle les longueurs (8 à 500 caractères)', () => {
+    const { errors } = validateMobileMoneyKeys({ api_key: 'court', webhook_secret: 'x'.repeat(501) })
+    expect(Object.keys(errors).sort()).toEqual(['api_key', 'webhook_secret'])
   })
 })

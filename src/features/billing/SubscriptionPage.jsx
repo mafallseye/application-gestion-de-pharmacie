@@ -22,6 +22,7 @@ import { errorMessage } from '../../lib/errors.js'
 import { formatDate, formatDateTime, formatMoney } from '../../lib/format.js'
 import { hasErrors, validatePharmacy } from '../../lib/validation.js'
 import { LoadError } from '../shared/LoadError.jsx'
+import { MobileMoneySettings } from './MobileMoneySettings.jsx'
 import { usePageTitle } from '../shared/usePageTitle.js'
 import shared from '../shared/shared.module.css'
 import { usePaymentCheck, usePlans, useSavePharmacy, useStartCheckout, useSubscriptionPayments, useVerifyPayment } from './api.js'
@@ -80,6 +81,7 @@ export default function SubscriptionPage() {
         <Plans subscription={subscription} />
         <PaymentHistory skipToken={token} />
         <PharmacyForm pharmacy={pharmacy} />
+        <MobileMoneySettings />
       </Stack>
     </>
   )

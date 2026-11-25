@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Minus, PackageSearch, Plus, Receipt, ShoppingCart, Trash2 } from 'lucide-react'
+import { Banknote, Minus, PackageSearch, Plus, Receipt, ShoppingCart, Smartphone, Trash2 } from 'lucide-react'
 import {
   Alert,
   Badge,
@@ -10,6 +10,7 @@ import {
   Field,
   IconButton,
   Input,
+  Modal,
   PageHeader,
   PageLoader,
   SearchInput,
@@ -26,8 +27,11 @@ import { filterMedicines } from '../medicines/filters.js'
 import { LoadError } from '../shared/LoadError.jsx'
 import { usePageTitle } from '../shared/usePageTitle.js'
 import shared from '../shared/shared.module.css'
-import { useCreateSale } from './api.js'
+import { saleExists, useCreateSale } from './api.js'
 import { addToCart, balanceDue, cartCount, cartTotal, lineTotal, removeFromCart, setQuantity, syncCart, toSaleItems } from './cart.js'
+import { useStartMobilePayment } from './mobileApi.js'
+import { isFinalPhase } from './mobilePayment.js'
+import { MobilePaymentPanel } from './MobilePaymentPanel.jsx'
 import styles from './NewSalePage.module.css'
 
 const CATALOGUE_SIZE = 30
@@ -71,10 +75,11 @@ function QuantityInput({ line, onChange }) {
 export default function NewSalePage() {
   usePageTitle('Nouvelle vente')
   const toast = useToast()
-  const { canSell } = useAuth()
+  const { canSell, pharmacy } = useAuth()
   const medicines = useMedicines({ refetchInterval: CATALOGUE_REFRESH_MS })
   const customers = useCustomers()
   const createSale = useCreateSale()
+  const startPayment = useStartMobilePayment()
 
   const [search, setSearch] = useState('')
   const [savedCart, setSavedCart] = useState([])
@@ -84,6 +89,14 @@ export default function NewSalePage() {
   const [customerError, setCustomerError] = useState(null)
   const [serverError, setServerError] = useState(null)
   const [lastSale, setLastSale] = useState(null)
+  // Mode de paiement : espèces par défaut ; le mobile money n'est proposé que si la pharmacie l'a activé.
+  const [mode, setMode] = useState('cash')
+  const mobileEnabled = canSell && pharmacy.mobile_money_enabled === true
+  const mobile = mobileEnabled && mode === 'mobile'
+  // Vente en attente de paiement mobile : { id, number, payment, cart } (le panier est gardé pour le rendre si la vente est annulée).
+  const [mobileSale, setMobileSale] = useState(null)
+  const [mobilePhase, setMobilePhase] = useState('waiting')
+  const [notice, setNotice] = useState(null)
 
   // Le panier affiché est toujours réaligné sur le stock et les prix à jour :
   // après un refus du serveur (stock insuffisant), il se corrige de lui-même.
@@ -101,6 +114,7 @@ export default function NewSalePage() {
     setSavedCart(next)
     setServerError(null)
     setLastSale(null)
+    setNotice(null)
   }
   const quantityInCart = (medicineId) => cart.find((line) => line.medicine_id === medicineId)?.quantity ?? 0
 
@@ -111,9 +125,65 @@ export default function NewSalePage() {
     else paymentHint = 'Paiement complet.'
   }
 
+  const resetForm = () => {
+    setSavedCart([])
+    setCustomerId('')
+    setPaidInput(null)
+    setSearch('')
+  }
+
+  // Mobile money : la vente est créée impayée (stock réservé), puis la demande
+  // de paiement est ouverte chez le prestataire et on attend le client.
+  const submitMobile = async () => {
+    setServerError(null)
+    setNotice(null)
+    let sale
+    try {
+      sale = await createSale.mutateAsync({
+        customerId: customerId ? Number(customerId) : null,
+        paidAmount: 0,
+        items: toSaleItems(cart),
+        expectedTotal: total,
+        mobile: true,
+      })
+    } catch (error) {
+      setServerError(errorMessage(error))
+      return
+    }
+    try {
+      const payment = await startPayment.mutateAsync({ saleId: sale.id })
+      setMobilePhase('waiting')
+      setMobileSale({ ...sale, payment, cart })
+      resetForm()
+    } catch (error) {
+      // Refus du prestataire : le serveur annule la vente et rend le stock.
+      // Si la vente existe encore (panne en cours de route), elle reste à reprendre.
+      const kept = await saleExists(sale.id).catch(() => true)
+      if (kept) resetForm()
+      setServerError(
+        kept
+          ? `${errorMessage(error)} La vente n° ${sale.number} reste enregistrée, en attente de paiement mobile : reprenez-la depuis la liste des ventes.`
+          : `${errorMessage(error)} La vente n’a pas été enregistrée et le stock a été rendu.`,
+      )
+    }
+  }
+
+  const onMobileFinal = (phase) => {
+    if (phase === 'completed') {
+      setLastSale({ id: mobileSale.id, number: mobileSale.number, change: 0, mobile: true })
+      toast.success(`Vente n° ${mobileSale.number} payée par mobile money.`)
+    } else if (phase === 'sale_cancelled' || phase === 'cancelled') {
+      // La vente n'a pas eu lieu : le panier revient, pour un paiement en espèces par exemple.
+      setSavedCart(mobileSale.cart)
+      setNotice(`Vente n° ${mobileSale.number} annulée : le stock a été rendu et le panier est de nouveau affiché.`)
+    }
+  }
+
   const submit = async (event) => {
     event.preventDefault()
-    if (!canSell || cart.length === 0 || paymentError || createSale.isPending) return
+    if (!canSell || cart.length === 0 || createSale.isPending || startPayment.isPending) return
+    if (mobile) return submitMobile()
+    if (paymentError) return
     if (due > 0 && !customerId) {
       setCustomerError('Choisissez un client : une vente à crédit doit être rattachée à un client.')
       return
@@ -128,10 +198,7 @@ export default function NewSalePage() {
         expectedTotal: total,
       })
       setLastSale({ ...sale, change: Math.max(0, given - total) })
-      setSavedCart([])
-      setCustomerId('')
-      setPaidInput(null)
-      setSearch('')
+      resetForm()
       toast.success(`Vente n° ${sale.number} enregistrée.`)
     } catch (error) {
       // Stock insuffisant, prix modifié… : useCreateSale recharge le catalogue
@@ -165,7 +232,17 @@ export default function NewSalePage() {
             </Button>
           }
         >
-          {lastSale.change > 0 ? `Monnaie à rendre : ${formatMoney(lastSale.change)}` : 'Le stock a été mis à jour.'}
+          {lastSale.mobile
+            ? 'Payée par mobile money. Le stock a été mis à jour.'
+            : lastSale.change > 0
+              ? `Monnaie à rendre : ${formatMoney(lastSale.change)}`
+              : 'Le stock a été mis à jour.'}
+        </Alert>
+      ) : null}
+
+      {notice ? (
+        <Alert tone="info" className={shared.pageAlert}>
+          {notice}
         </Alert>
       ) : null}
 
@@ -269,7 +346,27 @@ export default function NewSalePage() {
             </div>
 
             <div className={styles.fields}>
-              <Field label="Client" htmlFor="caisse-client" error={customerError} hint="Obligatoire pour une vente à crédit.">
+              {mobileEnabled ? (
+                <fieldset className={styles.modes}>
+                  <legend className={styles.modesLegend}>Mode de paiement</legend>
+                  <label className={styles.mode}>
+                    <input type="radio" name="mode-paiement" value="cash" checked={mode === 'cash'} onChange={() => setMode('cash')} />
+                    <Banknote size={18} aria-hidden="true" />
+                    Espèces
+                  </label>
+                  <label className={styles.mode}>
+                    <input type="radio" name="mode-paiement" value="mobile" checked={mode === 'mobile'} onChange={() => setMode('mobile')} />
+                    <Smartphone size={18} aria-hidden="true" />
+                    Mobile money
+                  </label>
+                </fieldset>
+              ) : null}
+              <Field
+                label="Client"
+                htmlFor="caisse-client"
+                error={mobile ? null : customerError}
+                hint={mobile ? 'Facultatif.' : 'Obligatoire pour une vente à crédit.'}
+              >
                 <Select
                   value={customerId}
                   onChange={(event) => {
@@ -298,30 +395,65 @@ export default function NewSalePage() {
                   Seule une vente au comptant (client de passage) est possible pour le moment.
                 </Alert>
               ) : null}
-              <Field label="Montant payé" htmlFor="caisse-paye" error={paymentError} hint={paymentHint}>
-                <Input
-                  inputMode="numeric"
-                  autoComplete="off"
-                  suffix="FCFA"
-                  value={paidInput ?? String(total)}
-                  onChange={(event) => {
-                    setPaidInput(event.target.value)
-                    setCustomerError(null)
-                  }}
-                />
-              </Field>
+              {mobile ? (
+                <p className={styles.mobileHint}>
+                  Le client paie {formatMoney(total)} avec Wave ou Orange Money : un code QR s’affichera à l’étape suivante.
+                </p>
+              ) : (
+                <Field label="Montant payé" htmlFor="caisse-paye" error={paymentError} hint={paymentHint}>
+                  <Input
+                    inputMode="numeric"
+                    autoComplete="off"
+                    suffix="FCFA"
+                    value={paidInput ?? String(total)}
+                    onChange={(event) => {
+                      setPaidInput(event.target.value)
+                      setCustomerError(null)
+                    }}
+                  />
+                </Field>
+              )}
               {serverError ? (
                 <Alert tone="danger" title="Vente non enregistrée">
                   {serverError}
                 </Alert>
               ) : null}
-              <Button type="submit" fullWidth icon={Receipt} disabled={!canSell || cart.length === 0} loading={createSale.isPending}>
-                Enregistrer la vente
+              <Button
+                type="submit"
+                fullWidth
+                icon={mobile ? Smartphone : Receipt}
+                disabled={!canSell || cart.length === 0}
+                loading={createSale.isPending || startPayment.isPending}
+              >
+                {mobile ? 'Demander le paiement mobile' : 'Enregistrer la vente'}
               </Button>
             </div>
           </form>
         </Card>
       </div>
+
+      <Modal
+        open={mobileSale !== null}
+        onClose={() => setMobileSale(null)}
+        title="Paiement par mobile money"
+        description="Présentez ce code au client : il le scanne avec son téléphone."
+        size="sm"
+        // Pas de fermeture par accident (Échap, clic à côté) tant que le paiement est en attente.
+        dismissible={isFinalPhase(mobilePhase)}
+        footer={
+          isFinalPhase(mobilePhase) ? (
+            <Button onClick={() => setMobileSale(null)}>Fermer</Button>
+          ) : (
+            <Button variant="ghost" onClick={() => setMobileSale(null)} title="La vente reste en attente : elle se reprend depuis la liste des ventes.">
+              Continuer plus tard
+            </Button>
+          )
+        }
+      >
+        {mobileSale ? (
+          <MobilePaymentPanel payment={mobileSale.payment} saleNumber={mobileSale.number} onFinal={onMobileFinal} onPhase={setMobilePhase} />
+        ) : null}
+      </Modal>
     </>
   )
 }
