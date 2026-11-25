@@ -82,6 +82,30 @@ export function paymentMethodLabel(method) {
   return METHODS[method] ?? 'Espèces'
 }
 
+const RECHECK_WINDOW_MS = 48 * 60 * 60 * 1000
+
+/** Demande ouverte chez le prestataire : elle a une référence et un lien de paiement. */
+export function isOpenRequest(payment) {
+  return Boolean(payment?.order_id && payment.checkout_url)
+}
+
+/**
+ * Demandes à revérifier d'office à l'ouverture d'un écran (rattrapage quand la
+ * notification du prestataire n'est pas arrivée) : en attente, ouvertes chez
+ * le prestataire, créées depuis moins de 48 h.
+ */
+export function mobilePaymentsToRecheck(payments, now = new Date()) {
+  return (payments ?? []).filter(
+    (payment) =>
+      payment.status === 'pending' && Boolean(payment.order_id) && now.getTime() - Date.parse(payment.created_at) < RECHECK_WINDOW_MS,
+  )
+}
+
+/** Après une vérification, faut-il recharger les ventes ? (le paiement n'est plus simplement « en attente ») */
+export function changesSale(status) {
+  return status !== 'pending' && status !== 'error' && status != null
+}
+
 /** Demande de paiement mobile en attente d'une vente (lue avec `mobile_payments`), ou null. */
 export function pendingMobilePayment(sale) {
   return sale?.mobile_payments?.find((payment) => payment.status === 'pending') ?? null

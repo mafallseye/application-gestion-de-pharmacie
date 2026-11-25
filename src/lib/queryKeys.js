@@ -12,6 +12,7 @@ export const queryKeys = {
   dashboard: ['dashboard'],
   plans: ['plans'],
   mobileSettings: ['mobile-settings'],
+  pendingMobilePayments: ['sales', 'pending-mobile-payments'],
   subscriptionPayments: ['subscription-payments'],
   paymentCheck: (token) => ['payment-check', token],
 }

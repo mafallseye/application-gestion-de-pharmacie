@@ -110,6 +110,11 @@ describe('ventes : solde et filtres', () => {
     expect(sales.map(saleBalance)).toEqual([0, 2000, 800])
     expect(sales.map(paymentStatus)).toEqual(['paid', 'partial', 'unpaid'])
   })
+  it('une vente en attente de paiement mobile n’est pas un impayé', () => {
+    const awaiting = { id: 4, number: 44, customer_name: '', grand_total: 2000, paid_amount: 0, awaiting_mobile: true, sold_at: '2026-11-20T09:00:00+00:00' }
+    expect(paymentStatus(awaiting)).toBe('awaiting_mobile')
+    expect(ids(filterSales([...sales, awaiting], { unpaidOnly: true }))).toEqual([2, 3])
+  })
   it('filtre par recherche (sans accents), impayés et période', () => {
     expect(ids(filterSales(sales))).toEqual([1, 2, 3])
     expect(ids(filterSales(sales, { search: 'elodie' }))).toEqual([3])

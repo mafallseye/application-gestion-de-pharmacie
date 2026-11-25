@@ -13,6 +13,7 @@ Refonte complète de la première version (PHP / MySQL, 2022) en **React** avec 
 - **Ventes** : historique, détail par article, encaissement d'un reste à payer, annulation (le stock est remis).
 - **Médicaments, catégories, clients, fournisseurs** : listes avec recherche et filtres, ajout, modification, suppression.
 - **Utilisateurs** : comptes créés par l'administrateur de la pharmacie, avec trois rôles.
+- **Paiement des ventes par mobile money** (facultatif) : la pharmacie enregistre sa propre clé NabooPay ; à la caisse, le client scanne un QR code et paie avec Wave ou Orange Money, et la vente est soldée automatiquement. Les espèces restent le mode par défaut.
 - **Plusieurs pharmacies** : chaque pharmacie s'inscrit, crée son espace et ne voit que ses propres données ; ses ventes sont numérotées à part.
 - **Abonnement** : 14 jours d'essai, puis offre mensuelle ou annuelle payée en ligne. Sans accès en cours, la pharmacie passe en lecture seule (elle garde ses données).
 
@@ -76,6 +77,8 @@ L'abonnement se paie par mobile money. Enregistrer les secrets du prestataire ch
 Si les deux prestataires sont configurés, NabooPay sert aux nouveaux paiements. Adresse à déclarer comme webhook chez le prestataire : `https://<projet>.supabase.co/functions/v1/billing`.
 
 Les offres et leurs prix sont dans la table `plans`.
+
+Le paiement des ventes utilise, lui, la clé NabooPay de chaque pharmacie, saisie par son administrateur dans l'application (page Abonnement). Elle est chiffrée en base (Vault) et lue uniquement par la fonction `sale-payments`, à déployer comme les deux autres.
 
 ### Commandes
 

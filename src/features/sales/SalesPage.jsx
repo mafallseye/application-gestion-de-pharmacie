@@ -7,6 +7,7 @@ import { LoadError } from '../shared/LoadError.jsx'
 import { usePageTitle } from '../shared/usePageTitle.js'
 import shared from '../shared/shared.module.css'
 import { useSales } from './api.js'
+import { useMobilePaymentCatchUp } from './mobileApi.js'
 import { customerLabel, filterSales, saleBalance } from './filters.js'
 import { PaymentBadge } from './PaymentBadge.jsx'
 
@@ -28,17 +29,22 @@ export default function SalesPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const unpaidOnly = params.get('impayees') === '1'
+  const awaitingMobile = params.get('mobile') === '1'
+  // Paiements mobiles peut-être déjà réglés (notification non reçue) : revérifiés une fois à l'ouverture.
+  useMobilePaymentCatchUp()
   const [search, setSearch] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
 
   // La période est filtrée côté serveur (l'historique peut dépasser la limite chargée),
   // et les impayées aussi : elles ne doivent pas dépendre de cette limite.
-  const sales = useSales({ from, to, unpaidOnly, limit: LIMIT })
+  const sales = useSales({ from, to, unpaidOnly, awaitingMobile, limit: LIMIT })
   const rows = useMemo(() => filterSales(sales.data, { search }), [sales.data, search])
-  const filtering = search.trim() !== '' || unpaidOnly || from !== '' || to !== ''
+  const filtering = search.trim() !== '' || unpaidOnly || awaitingMobile || from !== '' || to !== ''
 
+  // Les deux filtres s'excluent : une vente en attente de paiement mobile n'est pas un impayé.
   const setUnpaidOnly = (checked) => setParams(checked ? { impayees: '1' } : {}, { replace: true })
+  const setAwaitingMobile = (checked) => setParams(checked ? { mobile: '1' } : {}, { replace: true })
   const clearFilters = () => {
     setSearch('')
     setFrom('')
@@ -74,6 +80,10 @@ export default function SalesPage() {
               <label className={shared.checkbox}>
                 <input type="checkbox" checked={unpaidOnly} onChange={(event) => setUnpaidOnly(event.target.checked)} />
                 Impayées seulement
+              </label>
+              <label className={shared.checkbox}>
+                <input type="checkbox" checked={awaitingMobile} onChange={(event) => setAwaitingMobile(event.target.checked)} />
+                Paiement mobile en attente
               </label>
             </div>
           </Toolbar>

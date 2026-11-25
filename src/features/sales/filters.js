@@ -10,8 +10,10 @@ export function customerLabel(sale) {
   return sale.customer_name || 'Client de passage'
 }
 
-/** 'paid' | 'partial' | 'unpaid' */
+/** 'awaiting_mobile' | 'paid' | 'partial' | 'unpaid' */
 export function paymentStatus(sale) {
+  // Une vente qui attend son paiement mobile n'est pas un impayé : le client est en train de payer.
+  if (sale.awaiting_mobile) return 'awaiting_mobile'
   if (saleBalance(sale) === 0) return 'paid'
   return Number(sale.paid_amount) > 0 ? 'partial' : 'unpaid'
 }
@@ -28,7 +30,7 @@ export function filterSales(sales, filters = {}) {
     const row = { number: sale.number, customer_name: sale.customer_name, seller_name: sale.seller?.full_name }
     return (
       matchesSearch(row, search, ['number', 'customer_name', 'seller_name']) &&
-      (!unpaidOnly || saleBalance(sale) > 0) &&
+      (!unpaidOnly || (saleBalance(sale) > 0 && !sale.awaiting_mobile)) &&
       (!from || day >= from) &&
       (!to || day <= to)
     )

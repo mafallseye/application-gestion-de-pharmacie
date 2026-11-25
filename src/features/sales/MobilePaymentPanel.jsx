@@ -43,8 +43,9 @@ function QrCode({ value }) {
  *  - saleNumber, wholeSale (vente « mobile » jamais payée : l'annuler annule la vente)
  *  - onFinal(phase) : appelé une fois, à l'arrivée d'un état final
  *  - onPhase?(phase) : suivi de la phase courante (ex. bloquer la fermeture d'une modale)
+ *  - checkOnMount? : vérifier tout de suite (reprise d'une demande ancienne, peut-être déjà payée)
  */
-export function MobilePaymentPanel({ payment, saleNumber, wholeSale = true, onFinal, onPhase }) {
+export function MobilePaymentPanel({ payment, saleNumber, wholeSale = true, onFinal, onPhase, checkOnMount = false }) {
   const toast = useToast()
   const queryClient = useQueryClient()
   const [state, dispatch] = useReducer(mobilePaymentReducer, INITIAL_MOBILE_PAYMENT)
@@ -77,6 +78,11 @@ export function MobilePaymentPanel({ payment, saleNumber, wholeSale = true, onFi
   }, [])
 
   const verify = useCallback(() => ask(() => verifyMobilePayment(payment.order_id)), [ask, payment.order_id])
+
+  // Reprise d'une demande : première vérification immédiate (`ask` écarte tout doublon).
+  useEffect(() => {
+    if (checkOnMount) verify()
+  }, [checkOnMount, verify])
 
   // Vérification automatique : réarmée après chaque réponse « en attente ».
   useEffect(() => {

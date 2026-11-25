@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
   INITIAL_MOBILE_PAYMENT,
+  changesSale,
   isFinalPhase,
+  isOpenRequest,
   mobilePaymentOutcome,
   mobilePaymentReducer,
+  mobilePaymentsToRecheck,
   paymentMethodLabel,
   pendingMobilePayment,
 } from './mobilePayment.js'
@@ -77,5 +80,34 @@ describe('libellés et demande en attente', () => {
     expect(pendingMobilePayment({ mobile_payments: [{ id: 1, status: 'completed' }] })).toBeNull()
     expect(pendingMobilePayment({})).toBeNull()
     expect(pendingMobilePayment(null)).toBeNull()
+  })
+})
+
+describe('demande ouverte, rattrapage', () => {
+  const now = new Date('2026-11-27T12:00:00Z')
+  const request = (overrides) => ({ id: 1, status: 'pending', order_id: 'ord-1', checkout_url: 'https://exemple/p', created_at: '2026-11-27T11:00:00Z', ...overrides })
+
+  it('une demande est ouverte quand elle a une référence et un lien', () => {
+    expect(isOpenRequest(request())).toBe(true)
+    expect(isOpenRequest(request({ order_id: null, checkout_url: null }))).toBe(false)
+    expect(isOpenRequest(null)).toBe(false)
+  })
+  it('ne revérifie d’office que les demandes en attente, ouvertes, de moins de 48 h', () => {
+    const list = [
+      request({ id: 1 }),
+      request({ id: 2, order_id: null }), // pas encore ouverte chez le prestataire
+      request({ id: 3, status: 'completed' }),
+      request({ id: 4, status: 'cancelled' }),
+      request({ id: 5, created_at: '2026-11-25T12:00:00Z' }), // 48 h pile : trop ancienne
+      request({ id: 6, created_at: '2026-11-25T12:00:01Z' }),
+    ]
+    expect(mobilePaymentsToRecheck(list, now).map((p) => p.id)).toEqual([1, 6])
+    expect(mobilePaymentsToRecheck(undefined, now)).toEqual([])
+  })
+  it('recharge les ventes seulement si le paiement a changé d’état', () => {
+    expect(['completed', 'sale_cancelled', 'cancelled', 'review', 'unknown'].every(changesSale)).toBe(true)
+    expect(changesSale('pending')).toBe(false)
+    expect(changesSale('error')).toBe(false)
+    expect(changesSale(null)).toBe(false)
   })
 })

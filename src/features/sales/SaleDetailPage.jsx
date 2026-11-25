@@ -24,8 +24,8 @@ import { usePageTitle } from '../shared/usePageTitle.js'
 import shared from '../shared/shared.module.css'
 import { useDeleteSale, useRecordPayment, useSale } from './api.js'
 import { customerLabel, saleBalance } from './filters.js'
-import { useStartMobilePayment } from './mobileApi.js'
-import { paymentMethodLabel, pendingMobilePayment } from './mobilePayment.js'
+import { useCancelMobilePayment, useStartMobilePayment } from './mobileApi.js'
+import { isOpenRequest, paymentMethodLabel, pendingMobilePayment } from './mobilePayment.js'
 import { MobilePaymentPanel } from './MobilePaymentPanel.jsx'
 import { PaymentBadge } from './PaymentBadge.jsx'
 import styles from './SaleDetailPage.module.css'
@@ -71,6 +71,8 @@ export default function SaleDetailPage() {
   const deleteSale = useDeleteSale()
   const [paying, setPaying] = useState(false)
   const startMobile = useStartMobilePayment()
+  const cancelMobile = useCancelMobilePayment()
+  const [confirmingRequestCancel, setConfirmingRequestCancel] = useState(false)
   const [payingMobile, setPayingMobile] = useState(false)
   const [confirmingCancel, setConfirmingCancel] = useState(false)
 
@@ -105,32 +107,77 @@ export default function SaleDetailPage() {
   const data = sale.data
   const balance = saleBalance(data)
   const mobileEnabled = canSell && pharmacy.mobile_money_enabled === true
-  // Demande de paiement mobile en cours (une seule par vente). Sans lien de
-  // paiement, elle n'a pas abouti chez le prestataire : on propose de la relancer.
+  // Demande de paiement mobile en cours (une seule par vente). Une vente
+  // « mobile » naît avec sa demande ; tant que celle-ci n'a pas de lien de
+  // paiement, elle reste à ouvrir chez le prestataire.
   const pendingMobile = pendingMobilePayment(data)
-  const resumable = pendingMobile?.order_id && pendingMobile.checkout_url
-  const mobileStuck = (data.awaiting_mobile || pendingMobile) && !resumable
+  const resumable = isOpenRequest(pendingMobile)
+  const toOpen = pendingMobile !== null && !resumable
+  // Vente créée pour un paiement mobile et jamais payée : annuler la demande annule la vente.
+  const wholeSale = data.awaiting_mobile && Number(data.paid_amount) === 0
 
-  const onMobileFinal = (phase) => {
-    if (phase === 'sale_cancelled') {
-      // La vente n'existe plus : on ne la recharge pas, on revient à la liste.
-      setCancelling(true)
-      navigate('/ventes', { replace: true })
-      toast.success(`Vente n° ${number} annulée : le stock a été rendu.`)
-    } else if (phase === 'completed') {
-      toast.success('Paiement mobile reçu.')
-    }
+  const leaveCancelledSale = () => {
+    // La vente n'existe plus : on ne la recharge pas, on revient à la liste.
+    setCancelling(true)
+    navigate('/ventes', { replace: true })
+    toast.success(`Vente n° ${number} annulée : le stock a été rendu.`)
   }
 
-  const restartMobile = async () => {
+  const onMobileFinal = (phase) => {
+    if (phase === 'sale_cancelled') leaveCancelledSale()
+    else if (phase === 'completed') toast.success('Paiement mobile reçu.')
+  }
+
+  const openMobile = async () => {
     try {
       await startMobile.mutateAsync({ saleId })
     } catch (error) {
+      // Ex. « Un paiement est déjà en cours d'ouverture… » : affiché tel quel, sans relance
+      // automatique ; la vente est rechargée (useStartMobilePayment) et montrera le QR prêt.
       toast.error(errorMessage(error))
     }
   }
 
+  /**
+   * Annule la demande de paiement en attente (et, côté serveur, le lien chez le
+   * prestataire). Renvoie vrai si la demande est bien close sans paiement.
+   */
+  const cancelRequest = async () => {
+    let status
+    try {
+      status = await cancelMobile.mutateAsync(pendingMobile.id)
+    } catch (error) {
+      toast.error(errorMessage(error))
+      return false
+    }
+    if (status === 'sale_cancelled') {
+      leaveCancelledSale()
+      return false
+    }
+    if (status === 'cancelled') return true
+    if (status === 'completed') toast.success('Le client venait de payer : le paiement mobile a été enregistré.')
+    else if (status === 'review') toast.info('Paiement reçu, en cours de contrôle : prévenez l’administrateur de la pharmacie.')
+    else toast.error('Annulation impossible pour le moment. Réessayez dans un instant.')
+    return false
+  }
+
+  const confirmRequestCancel = async () => {
+    const closed = await cancelRequest()
+    setConfirmingRequestCancel(false)
+    if (closed) toast.success('Demande de paiement mobile annulée.')
+  }
+
+  // Annulation de la vente par l'administrateur. La base refuse de supprimer une
+  // vente dont le lien de paiement est actif : la demande est donc annulée d'abord
+  // (ce qui l'annule aussi chez le prestataire), puis la vente est supprimée.
   const cancelSale = async () => {
+    if (pendingMobile) {
+      const closed = await cancelRequest()
+      if (!closed) {
+        setConfirmingCancel(false)
+        return
+      }
+    }
     setCancelling(true)
     try {
       await deleteSale.mutateAsync(saleId)
@@ -166,8 +213,8 @@ export default function SaleDetailPage() {
                 icon={Banknote}
                 onClick={() => setPaying(true)}
                 // Deux encaissements en même temps pourraient dépasser le reste à payer.
-                disabled={Boolean(pendingMobile)}
-                title={pendingMobile ? 'Annulez d’abord la demande de paiement mobile en attente.' : undefined}
+                disabled={Boolean(pendingMobile) || data.awaiting_mobile}
+                title={pendingMobile || data.awaiting_mobile ? 'Annulez d’abord la demande de paiement mobile en attente.' : undefined}
               >
                 Encaisser
               </Button>
@@ -215,11 +262,12 @@ export default function SaleDetailPage() {
                 key={pendingMobile.id}
                 payment={{ payment_id: pendingMobile.id, order_id: pendingMobile.order_id, url: pendingMobile.checkout_url, amount: pendingMobile.amount }}
                 saleNumber={data.number}
-                wholeSale={data.awaiting_mobile && Number(data.paid_amount) === 0}
+                wholeSale={wholeSale}
                 onFinal={onMobileFinal}
+                checkOnMount
               />
             </div>
-            {data.awaiting_mobile && Number(data.paid_amount) === 0 ? (
+            {wholeSale ? (
               <p className={shared.note}>
                 Le client préfère payer en espèces ? Annulez cette vente (le stock est rendu), puis refaites-la à la caisse en espèces.
               </p>
@@ -228,20 +276,26 @@ export default function SaleDetailPage() {
             )}
           </Card>
         ) : null}
-        {mobileStuck && canSell ? (
+        {toOpen && canSell ? (
           <Alert
             tone="warning"
-            title="Paiement mobile à relancer"
+            title="Paiement mobile à ouvrir"
             action={
-              mobileEnabled ? (
-                <Button size="sm" variant="secondary" loading={startMobile.isPending} onClick={restartMobile}>
-                  Relancer le paiement
+              <div className={shared.filters}>
+                {mobileEnabled ? (
+                  <Button size="sm" loading={startMobile.isPending} disabled={cancelMobile.isPending} onClick={openMobile}>
+                    Ouvrir le paiement
+                  </Button>
+                ) : null}
+                <Button size="sm" variant="secondary" disabled={startMobile.isPending} onClick={() => setConfirmingRequestCancel(true)}>
+                  {wholeSale ? 'Annuler la vente' : 'Annuler la demande'}
                 </Button>
-              ) : null
+              </div>
             }
           >
-            Cette vente attend un paiement par mobile money, mais la demande n’a pas abouti. Relancez-la
-            {isAdmin ? ', ou annulez la vente.' : ', ou demandez à l’administrateur d’annuler la vente.'}
+            {wholeSale
+              ? `Cette vente attend un paiement par mobile money de ${formatMoney(pendingMobile.amount)}, mais le code de paiement n’a pas encore été créé. Ouvrez le paiement pour l’afficher, ou annulez la vente (le stock sera rendu).`
+              : `Une demande de paiement mobile de ${formatMoney(pendingMobile.amount)} est en attente, sans code de paiement. Ouvrez le paiement, ou annulez la demande pour encaisser en espèces.`}
           </Alert>
         ) : null}
 
@@ -303,6 +357,21 @@ export default function SaleDetailPage() {
       </FormModal>
 
       <ConfirmDialog
+        open={confirmingRequestCancel}
+        title={wholeSale ? `Annuler la vente n° ${data.number} ?` : 'Annuler la demande de paiement mobile ?'}
+        message={
+          wholeSale
+            ? 'La vente sera supprimée et le stock rendu. Si le client a déjà payé, la vente sera au contraire validée.'
+            : 'La demande sera annulée ; la vente reste à encaisser. Si le client a déjà payé, le paiement sera au contraire enregistré.'
+        }
+        confirmLabel={wholeSale ? 'Annuler la vente' : 'Annuler la demande'}
+        cancelLabel={wholeSale ? 'Conserver la vente' : 'Conserver la demande'}
+        loading={cancelMobile.isPending}
+        onConfirm={confirmRequestCancel}
+        onCancel={() => setConfirmingRequestCancel(false)}
+      />
+
+      <ConfirmDialog
         open={confirmingCancel}
         title={`Annuler la vente n° ${data.number} ?`}
         message={
@@ -313,7 +382,7 @@ export default function SaleDetailPage() {
         }
         confirmLabel="Annuler la vente"
         cancelLabel="Conserver la vente"
-        loading={deleteSale.isPending}
+        loading={deleteSale.isPending || cancelMobile.isPending}
         onConfirm={cancelSale}
         onCancel={() => setConfirmingCancel(false)}
       />

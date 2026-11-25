@@ -9,14 +9,17 @@ const WITH_DETAILS = `${WITH_SELLER}, items:sale_items(*), payments(id,amount,me
 /**
  * Ventes les plus récentes d'abord, avec `seller` ({ id, full_name, email } ou null).
  * `from` / `to` (AAAA-MM-JJ inclus) limitent la période côté serveur ;
- * `unpaidOnly` ne garde que les ventes avec un reste à payer (filtre serveur) ;
+ * `unpaidOnly` ne garde que les ventes avec un reste à payer (filtre serveur) —
+ * sans celles qui attendent un paiement mobile, qui ne sont pas des impayés ;
+ * `awaitingMobile` ne garde que ces ventes en attente de paiement mobile ;
  * `limit` borne le volume chargé (l'historique grossit sans fin).
  */
-export async function listSales({ from, to, unpaidOnly = false, limit = 500 } = {}) {
+export async function listSales({ from, to, unpaidOnly = false, awaitingMobile = false, limit = 500 } = {}) {
   let query = supabase.from('sales').select(WITH_SELLER).order('sold_at', { ascending: false }).limit(limit)
   if (from) query = query.gte('sold_at', `${from}T00:00:00Z`)
   if (to) query = query.lte('sold_at', `${to}T23:59:59.999Z`)
-  if (unpaidOnly) query = query.gt('balance', 0)
+  if (unpaidOnly) query = query.gt('balance', 0).eq('awaiting_mobile', false)
+  if (awaitingMobile) query = query.eq('awaiting_mobile', true)
   return unwrap(await query)
 }
 
