@@ -14,20 +14,20 @@ export async function listSubscriptionPayments() {
   return unwrap(await supabase.from('subscription_payments').select('*').order('created_at', { ascending: false }).limit(50))
 }
 
-// La fonction Edge `billing` parle à PayDunya avec les clés du serveur.
+// La fonction Edge `billing` parle au prestataire de paiement (NabooPay ou PayDunya) avec les clés du serveur.
 async function billing(body) {
   const { data, error } = await supabase.functions.invoke('billing', { body })
   if (error) throw await functionError(error)
   return data
 }
 
-/** Ouvre un paiement pour l'offre `plan` : renvoie { url, token } (url = page de paiement PayDunya). */
+/** Ouvre un paiement pour l'offre `plan` : renvoie { url, token } (url = page de paiement). */
 export function startCheckout(plan) {
   return billing({ action: 'checkout', plan })
 }
 
 /**
- * État d'un paiement auprès de PayDunya : 'completed' | 'pending' | 'cancelled' |
+ * État d'un paiement auprès du prestataire de paiement : 'completed' | 'pending' | 'cancelled' |
  * 'failed' | 'review' | 'error' | 'unknown' (voir paymentOutcome).
  */
 export async function verifyPayment(token) {
@@ -65,7 +65,7 @@ export function useStartCheckout() {
 }
 
 /**
- * Vérifie le paiement `token` (retour de PayDunya). Une fois le paiement
+ * Vérifie le paiement `token` (retour du paiement). Une fois le paiement
  * validé, la pharmacie (dates d'abonnement) et l'historique sont rechargés.
  */
 export function usePaymentCheck(token) {

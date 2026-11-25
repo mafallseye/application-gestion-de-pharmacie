@@ -2,7 +2,7 @@
 
 # Gestion de pharmacie
 
-Application en ligne de gestion de pharmacie, proposée à plusieurs pharmacies (SaaS) : stock de médicaments, caisse, ventes, clients, fournisseurs et utilisateurs, avec abonnement payé par **PayDunya** (Orange Money, Wave, carte).
+Application en ligne de gestion de pharmacie, proposée à plusieurs pharmacies (SaaS) : stock de médicaments, caisse, ventes, clients, fournisseurs et utilisateurs, avec abonnement payé par mobile money (Wave, Orange Money) via **NabooPay** ou **PayDunya**.
 
 Refonte complète de la première version (PHP / MySQL, 2022) en **React** avec une base **Supabase** (Postgres).
 
@@ -33,7 +33,7 @@ La clé utilisée par le navigateur est publique par nature : la protection est 
 - **Règles d'accès par ligne (RLS)** sur toutes les tables, selon le rôle ; aucun droit pour un visiteur non connecté.
 - **Cloisonnement par pharmacie** : chaque ligne appartient à une pharmacie ; les règles d'accès et les clés étrangères empêchent toute lecture ou écriture d'une pharmacie à l'autre.
 - **Compte sans pharmacie ou désactivé** : il ne voit aucune donnée.
-- **Paiements** : un abonnement n'est activé qu'après vérification directe auprès de PayDunya (serveur à serveur), jamais sur la seule foi du navigateur ou d'une notification.
+- **Paiements** : un abonnement n'est activé qu'après vérification directe auprès du prestataire de paiement (serveur à serveur), jamais sur la seule foi du navigateur ou d'une notification.
 - **Ventes et encaissements** uniquement par des fonctions de la base (`create_sale`, `record_payment`) qui vérifient le stock et les montants.
 - **Gestion des comptes** par une fonction serveur (`admin-users`) réservée à l'administrateur de la pharmacie ; la clé de service ne quitte jamais le serveur.
 - Aucun secret dans le dépôt.
@@ -61,17 +61,19 @@ npm run dev
 2. Déployer les fonctions `admin-users` et `billing` (`supabase functions deploy admin-users`, puis `billing`).
 3. Laisser l'inscription activée (Authentication → Sign In / Providers) : chaque pharmacie crée son compte, puis sa pharmacie, depuis l'application. Pour de vraies inscriptions, brancher un service d'envoi d'e-mails (SMTP) : celui fourni par défaut est limité à quelques messages par heure.
 
-### Paiement en ligne (PayDunya)
+### Paiement en ligne (NabooPay ou PayDunya)
 
-Enregistrer ces secrets dans Supabase (Edge Functions → Secrets) ; ils ne vont jamais dans le dépôt ni dans le navigateur :
+L'abonnement se paie par mobile money. Enregistrer les secrets du prestataire choisi dans Supabase (Edge Functions → Secrets) ; ils ne vont jamais dans le dépôt ni dans le navigateur.
 
 | Secret | Valeur |
 |---|---|
-| `PAYDUNYA_MASTER_KEY` | clé principale du compte PayDunya |
-| `PAYDUNYA_PRIVATE_KEY` | clé privée (de test ou de production) |
-| `PAYDUNYA_TOKEN` | token (de test ou de production) |
+| `NABOOPAY_API_KEY` | clé d'API NabooPay (portée `checkout`) |
+| `NABOOPAY_WEBHOOK_SECRET` | clé secrète du webhook NabooPay |
+| `PAYDUNYA_MASTER_KEY`, `PAYDUNYA_PRIVATE_KEY`, `PAYDUNYA_TOKEN` | clés PayDunya |
 | `PAYDUNYA_MODE` | `test` ou `live` |
 | `APP_URL` | adresse publique du site, pour le retour après paiement |
+
+Si les deux prestataires sont configurés, NabooPay sert aux nouveaux paiements. Adresse à déclarer comme webhook chez le prestataire : `https://<projet>.supabase.co/functions/v1/billing`.
 
 Les offres et leurs prix sont dans la table `plans`.
 

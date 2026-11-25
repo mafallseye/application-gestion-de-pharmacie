@@ -34,20 +34,43 @@ const STATUS = {
   expired: { tone: 'danger', label: 'Expiré' },
 }
 
+// Référence du paiement en cours, gardée le temps de l'aller-retour vers la page
+// de paiement : certains prestataires ne la renvoient pas dans l'adresse de retour.
+const PENDING_KEY = 'pharmacie-paiement-en-cours'
+function rememberPayment(token) {
+  try {
+    if (token) sessionStorage.setItem(PENDING_KEY, token)
+    else sessionStorage.removeItem(PENDING_KEY)
+  } catch {
+    // stockage indisponible : la vérification d'office de l'historique prend le relais
+  }
+}
+function rememberedPayment() {
+  try {
+    return sessionStorage.getItem(PENDING_KEY)
+  } catch {
+    return null
+  }
+}
+
 const duration = (months) => (months === 1 ? '1 mois' : months === 12 ? '1 an' : `${months} mois`)
 
 export default function SubscriptionPage() {
   usePageTitle('Abonnement')
   const { subscription, pharmacy } = useAuth()
   const [params, setParams] = useSearchParams()
-  const token = params.get('token')
+  const token = params.get('token') ?? (params.get('retour') === '1' ? rememberedPayment() : null)
   const cancelled = params.get('annule') === '1'
 
   return (
     <>
       <PageHeader title="Abonnement" subtitle={`Accès de ${pharmacy.name} à l’application et fiche de la pharmacie.`} />
       <Stack gap="var(--space-4)">
-        {token ? <PaymentResult token={token} onDismiss={() => setParams({}, { replace: true })} /> : null}
+        {token ? <PaymentResult token={token} onDismiss={() => {
+              rememberPayment(null)
+              setParams({}, { replace: true })
+            }}
+          /> : null}
         {cancelled && !token ? (
           <Alert tone="info" title="Paiement annulé">
             Aucun montant n’a été débité. Vous pouvez relancer le paiement quand vous le souhaitez.
@@ -89,7 +112,7 @@ function Outcome({ status, error, checking, onRetry, onClose }) {
   )
 }
 
-/** Résultat du paiement au retour de PayDunya (?token=…). */
+/** Résultat du paiement au retour du paiement (?token=…). */
 function PaymentResult({ token, onDismiss }) {
   const check = usePaymentCheck(token)
   if (check.isPending) return <Alert tone="info">Vérification du paiement en cours…</Alert>
@@ -135,8 +158,9 @@ function Plans({ subscription }) {
     setStarting(plan.code)
     setError(null)
     try {
-      const { url } = await checkout.mutateAsync(plan.code)
-      // Navigation simple vers la page de paiement PayDunya (ni formulaire ni fetch : la CSP du site les limite).
+      const { url, token } = await checkout.mutateAsync(plan.code)
+      rememberPayment(token)
+      // Navigation simple vers la page de paiement (ni formulaire ni fetch : la CSP du site les limite).
       window.location.assign(url)
     } catch (checkoutError) {
       setError(errorMessage(checkoutError))
@@ -145,7 +169,7 @@ function Plans({ subscription }) {
   }
 
   return (
-    <Card title="Offres" subtitle="Paiement sécurisé par PayDunya (Orange Money, Wave, carte bancaire…).">
+    <Card title="Offres" subtitle="Paiement sécurisé par mobile money (Wave, Orange Money).">
       {error ? (
         <Alert tone="danger" title="Paiement impossible" className={shared.pageAlert}>
           {error}
@@ -197,7 +221,7 @@ const PAYMENT_COLUMNS = [
 
 /**
  * Historique des paiements. Un paiement resté « en attente » (onglet fermé
- * avant le retour de PayDunya) peut être revérifié : d'office à l'ouverture de
+ * avant le retour du paiement) peut être revérifié : d'office à l'ouverture de
  * la page pour les paiements récents, puis à la demande (bouton « Vérifier »).
  * `skipToken` : paiement déjà vérifié par le retour ?token=….
  */

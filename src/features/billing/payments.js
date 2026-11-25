@@ -60,7 +60,7 @@ export function paymentOutcome(status) {
   return OUTCOMES[status] ?? UNKNOWN
 }
 
-/** Un paiement en attente peut être revérifié auprès de PayDunya s'il a une référence. */
+/** Un paiement en attente peut être revérifié auprès du prestataire de paiement s'il a une référence. */
 export function canVerify(payment) {
   return payment.status === 'pending' && Boolean(payment.provider_token)
 }
