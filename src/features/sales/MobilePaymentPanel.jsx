@@ -29,7 +29,7 @@ function QrCode({ value }) {
   // Fond toujours blanc, même en thème sombre : le code doit rester lisible par un téléphone.
   return (
     <div className={styles.qr}>
-      {image ? <img src={image} alt="Code QR à scanner par le client pour payer" width="240" height="240" /> : <Spinner size={28} />}
+      {image ? <img src={image} alt="Code QR à scanner par le client pour payer" width="184" height="184" /> : <Spinner size={28} />}
     </div>
   )
 }
@@ -119,7 +119,11 @@ export function MobilePaymentPanel({ payment, saleNumber, wholeSale = true, onFi
         <>
           <QrCode value={payment.url} />
           <div className={styles.link}>
-            <input className={styles.linkInput} readOnly value={payment.url} aria-label="Lien de paiement" onFocus={(event) => event.target.select()} />
+            {/* Texte (et non champ) : dans une modale, le focus doit aller au bouton « Vérifier maintenant ». */}
+            <span className={styles.linkText} title={payment.url}>
+              <span className="sr-only">Lien de paiement : </span>
+              {payment.url}
+            </span>
             <Button size="sm" variant="secondary" icon={Copy} onClick={copyLink}>
               Copier
             </Button>
@@ -167,7 +171,8 @@ export function MobilePaymentPanel({ payment, saleNumber, wholeSale = true, onFi
               Réessayer
             </Button>
           ) : (
-            <Button icon={RefreshCw} loading={busy} onClick={verify}>
+            // data-autofocus : dans une modale, le focus va ici plutôt que sur le champ du lien.
+            <Button icon={RefreshCw} loading={busy} onClick={verify} data-autofocus>
               Vérifier maintenant
             </Button>
           )}

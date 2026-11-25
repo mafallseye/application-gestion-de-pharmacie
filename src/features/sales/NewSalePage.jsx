@@ -396,9 +396,11 @@ export default function NewSalePage() {
                 </Alert>
               ) : null}
               {mobile ? (
-                <p className={styles.mobileHint}>
-                  Le client paie {formatMoney(total)} avec Wave ou Orange Money : un code QR s’affichera à l’étape suivante.
-                </p>
+                cart.length > 0 ? (
+                  <p className={styles.mobileHint}>
+                    Le client paie {formatMoney(total)} avec Wave ou Orange Money : un code QR s’affichera à l’étape suivante.
+                  </p>
+                ) : null
               ) : (
                 <Field label="Montant payé" htmlFor="caisse-paye" error={paymentError} hint={paymentHint}>
                   <Input
@@ -436,7 +438,6 @@ export default function NewSalePage() {
         open={mobileSale !== null}
         onClose={() => setMobileSale(null)}
         title="Paiement par mobile money"
-        description="Présentez ce code au client : il le scanne avec son téléphone."
         size="sm"
         // Pas de fermeture par accident (Échap, clic à côté) tant que le paiement est en attente.
         dismissible={isFinalPhase(mobilePhase)}
