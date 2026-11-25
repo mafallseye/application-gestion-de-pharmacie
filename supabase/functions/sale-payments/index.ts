@@ -77,14 +77,26 @@ async function sync(admin: SupabaseClient, orderId: string, pharmacyId: string) 
     .maybeSingle()
   if (readError) return 'error'
   if (!pay || pay.pharmacy_id !== pharmacyId) return 'unknown'
-  if (pay.status !== 'pending') return pay.status as string
+  if (pay.status !== 'pending' && pay.status !== 'cancelled') return pay.status as string
 
   const keys = await keysOf(admin, pharmacyId)
-  if (!keys) return 'error'
+  if (!keys) return pay.status === 'cancelled' ? 'cancelled' : 'error'
   const { status: http, data: info } = await naboo(`/transactions/${encodeURIComponent(orderId)}`, keys.apiKey)
-  if (http !== 200 || !info) return 'error'
+  if (http !== 200 || !info) return pay.status === 'cancelled' ? 'cancelled' : 'error'
 
   const state = String(info.transaction_status ?? '')
+  // Demande que nous avions annulée, mais que le client a tout de même payée :
+  // l'argent est reçu, on le signale pour contrôle au lieu de l'ignorer.
+  if (pay.status === 'cancelled') {
+    if (state !== 'paid' && state !== 'paid_and_blocked') return 'cancelled'
+    console.error('sale-payments: paiement reçu sur une demande annulée', { orderId })
+    await admin
+      .from('sale_mobile_payments')
+      .update({ status: 'review', paid_at: new Date().toISOString() })
+      .eq('id', pay.id)
+      .eq('status', 'cancelled')
+    return 'review'
+  }
   if (state === 'paid' || state === 'paid_and_blocked') {
     const coherent = state === 'paid' && info.order_id === orderId && Number(info.amount) === Number(pay.amount)
     if (!coherent) {
@@ -189,7 +201,21 @@ Deno.serve(async (req) => {
         webhook_url: webhookUrl,
       })
     }
+    // Tant qu'un lien de paiement est actif, la clé qui l'a créé reste nécessaire
+    // pour le vérifier ou l'annuler : on ne la retire ni ne la remplace.
+    const { count: active } = await admin
+      .from('sale_mobile_payments')
+      .select('id', { count: 'exact', head: true })
+      .eq('pharmacy_id', pharmacyId)
+      .eq('status', 'pending')
+      .not('order_id', 'is', null)
+    const hasActive = (active ?? 0) > 0
+    const blocked = json(409, {
+      error: "Des paiements mobiles sont en attente. Annulez-les (ou attendez qu'ils soient payés) avant de modifier ce réglage.",
+    })
+
     if (action === 'settings_clear') {
+      if (hasActive) return blocked
       const { error } = await admin.rpc('clear_pharmacy_payment_keys', { p_pharmacy: pharmacyId })
       if (error) return json(500, { error: 'Suppression impossible pour le moment.' })
       return json(200, { ok: true })
@@ -210,6 +236,7 @@ Deno.serve(async (req) => {
     if (probe.status !== 200) {
       return json(502, { error: 'NabooPay est injoignable. Réessayez dans un instant.' })
     }
+    if (hasActive && (await keysOf(admin, pharmacyId))) return blocked
     const { error } = await admin.rpc('set_pharmacy_payment_keys', {
       p_pharmacy: pharmacyId,
       p_user: caller.id,
