@@ -89,7 +89,11 @@ async function main() {
   if (want('tableau-de-bord')) {
     await go(page, '/')
     await page.screenshot({ ...jpg('tableau-de-bord'), fullPage: true, clip: { x: 0, y: 0, width: 1280, height: 1030 } })
-    await page.locator('aside').screenshot(jpg('menu'))
+    // Panneau du bouton d'aide (en bas à droite de chaque écran).
+    await page.getByRole('button', { name: /Besoin d.aide/ }).click()
+    await settle(page, 400)
+    await page.getByRole('group', { name: 'Aide et assistance' }).screenshot(jpg('aide'))
+    await page.keyboard.press('Escape')
   }
   if (want('medicaments')) {
     await go(page, '/medicaments')
@@ -155,6 +159,7 @@ async function main() {
   }
   if (want('avis')) {
     await go(page, '/')
+    await page.getByRole('button', { name: /Besoin d.aide/ }).click()
     await page.getByRole('button', { name: 'Donner mon avis' }).click()
     await settle(page, 400)
     await page.locator('dialog[open]').screenshot(jpg('avis'))
